@@ -1,2 +1,2 @@
-# CodeLife
-The Intelligent Cyber Range . An AI-Powered Hub for Cybersecurity Synthesis and Operations .
+﻿ # CodeLife Project
+This is the main repo for CodeLife: The Intelligent Cyber Range.
