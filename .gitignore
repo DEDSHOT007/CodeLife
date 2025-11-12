@@ -9,3 +9,30 @@ __pycache__/
 
 # Environment
 .env
+
+#frontend
+frontend/src/firebase.js
+
+#Ignore Firebase Admin SDK Key
+codelife-9e846-firebase-adminsdk-fbsvc-53ac4d61e7.json
+
+# General log files
+*.log
+
+# Temporary files
+tmp/
+
+# Python cache and environment files
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE/editor folders
+.vscode/
+.idea/
