@@ -41,6 +41,7 @@ async function authenticatedRequest(endpoint, options = {}) {
 export const api = {
   getUserProfile: () => authenticatedRequest('/user/profile'),
   getUserProgress: () => authenticatedRequest('/user/progress'),
+  getEnrolledCourses: () => authenticatedRequest('/user/courses'),
   updateUserProfile: (data) =>
     authenticatedRequest('/user/profile', {
       method: 'PUT',

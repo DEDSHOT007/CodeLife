@@ -195,6 +195,17 @@ export default function Dashboard() {
         <Card className="card-glass border-0 shadow-lg animate-fadeIn">
           <Card.Body className="p-4">
             <h5 className="text-white mb-4 fw-bold">Quick Actions</h5>
+            <div className="mb-3 d-flex">
+              <Button variant="primary" onClick={() => navigate('/learning-hub')}>
+                📚 Learning Hub
+              </Button>
+              <Button variant="success" className="ms-2" onClick={() => navigate('/progress')}>
+                📊 My Progress
+              </Button>
+              <Button variant="info" className="ms-2" onClick={() => navigate('/my-courses')}>
+                📖 My Courses
+              </Button>
+            </div>
             <Row className="g-3">
               <Col md={4}>
                 <div className="p-3 text-center" style={{ backgroundColor: 'rgba(71, 85, 105, 0.2)', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s' }} 

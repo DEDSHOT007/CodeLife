@@ -1,151 +1,300 @@
-import React, { useState } from 'react';
-import { Container, Form, Button, Card, Alert, Row, Col, Spinner } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Form, Button, Card, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
 export default function Signup() {
+  const { signup } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [dob, setDob] = useState('');
+  const [gender, setGender] = useState('');
+  const [country, setCountry] = useState('');
+  const [state, setState] = useState('');
+  const [institution, setInstitution] = useState('');
+  
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [universities, setUniversities] = useState([]);
+  
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
   const navigate = useNavigate();
+  const db = getFirestore();
+
+  // Fetch countries on component mount
+  useEffect(() => {
+    fetchCountries();
+  }, []);
+
+  // Fetch states when country changes
+  useEffect(() => {
+    if (country) {
+      fetchStates(country);
+    }
+  }, [country]);
+
+  // Fetch universities when country changes
+  useEffect(() => {
+    if (country) {
+      fetchUniversities(country);
+    }
+  }, [country]);
+
+  async function fetchCountries() {
+    try {
+      const response = await fetch('https://restcountries.com/v3.1/all');
+      const data = await response.json();
+      const countryList = data.map(c => c.name.common).sort();
+      setCountries(countryList);
+    } catch (error) {
+      console.error('Failed to fetch countries:', error);
+    }
+  }
+
+  async function fetchStates(countryName) {
+    try {
+      // Using country-state-city API (requires installation or use public endpoints)
+      // Alternative: Use https://countriesnow.space/api/v0.1/countries/states
+      const response = await fetch('https://countriesnow.space/api/v0.1/countries/states', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ country: countryName })
+      });
+      const data = await response.json();
+      
+      if (data.data && data.data.states) {
+        const stateList = data.data.states.map(s => s.name).sort();
+        setStates(stateList);
+      } else {
+        setStates([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch states:', error);
+      setStates([]);
+    }
+  }
+
+  async function fetchUniversities(countryName) {
+    try {
+      const response = await fetch(`http://universities.hipolabs.com/search?country=${countryName}`);
+      const data = await response.json();
+      const universityList = data.map(u => u.name).sort();
+      setUniversities(universityList);
+    } catch (error) {
+      console.error('Failed to fetch universities:', error);
+      setUniversities([]);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (password !== passwordConfirm) {
+    // Validation
+    if (password !== confirmPassword) {
       return setError('Passwords do not match');
     }
 
-    if (password.length < 6) {
-      return setError('Password must be at least 6 characters');
+    if (!name || !dob || !gender || !country) {
+      return setError('Please fill all required fields');
     }
 
     try {
       setError('');
       setLoading(true);
-      await signup(email, password);
+
+      // Create Firebase Auth user
+      const userCredential = await signup(email, password);
+      const user = userCredential.user;
+
+      // Save additional user details to Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid,
+        email: email,
+        name: name,
+        dob: dob,
+        gender: gender,
+        country: country,
+        state: state,
+        institution: institution,
+        created_at: new Date(),
+        email_verified: false
+      });
+
       navigate('/dashboard');
     } catch (error) {
       setError('Failed to create account: ' + error.message);
     }
+
     setLoading(false);
   }
 
   return (
     <div className="bg-gradient-dark min-vh-100 d-flex align-items-center justify-content-center py-5">
-      <Container>
-        <Row className="justify-content-center">
-          <Col lg={5} md={6} sm={8} xs={12}>
-            {/* Header */}
-            <div className="text-center mb-5 animate-slideIn">
-              <h1 className="display-5 fw-bold mb-2">
-                <span style={{ background: 'linear-gradient(135deg, #60a5fa 0%, #a855f7 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  CodeLife
-                </span>
-              </h1>
-              <p className="text-muted fs-6">Start Your Cybersecurity Journey</p>
+      <Container style={{ maxWidth: '600px' }}>
+        <Card className="card-glass border-0 shadow-lg animate-fadeIn">
+          <Card.Body className="p-5">
+            <div className="text-center mb-4">
+              <h2 className="fw-bold mb-2" style={{ 
+                background: 'linear-gradient(135deg, #60a5fa 0%, #a855f7 100%)', 
+                backgroundClip: 'text', 
+                WebkitBackgroundClip: 'text', 
+                WebkitTextFillColor: 'transparent' 
+              }}>
+                Join CodeLife
+              </h2>
+              <p className="text-muted">Create your account and start learning</p>
             </div>
 
-            {/* Card */}
-            <Card className="card-glass border-0 shadow-lg animate-fadeIn">
-              <Card.Body className="p-5">
-                <h2 className="h4 fw-bold mb-4 text-white">Create Account</h2>
+            {error && <Alert variant="danger" onClose={() => setError('')} dismissible>{error}</Alert>}
 
-                {/* Error Alert */}
-                {error && (
-                  <Alert variant="danger" className="mb-4 border-0" role="alert">
-                    <strong>Error:</strong> {error}
-                  </Alert>
-                )}
+            <Form onSubmit={handleSubmit}>
+              {/* Email */}
+              <Form.Group className="mb-3">
+                <Form.Label className="text-white">Email *</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="bg-dark text-white border-secondary"
+                />
+              </Form.Group>
 
-                {/* Form */}
-                <Form onSubmit={handleSubmit}>
-                  {/* Email Field */}
-                  <Form.Group className="mb-4">
-                    <Form.Label className="form-label mb-2">Email Address</Form.Label>
-                    <Form.Control
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      disabled={loading}
-                      className="py-2"
-                    />
-                  </Form.Group>
+              {/* Name */}
+              <Form.Group className="mb-3">
+                <Form.Label className="text-white">Full Name *</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="bg-dark text-white border-secondary"
+                />
+              </Form.Group>
 
-                  {/* Password Field */}
-                  <Form.Group className="mb-4">
-                    <Form.Label className="form-label mb-2">Password</Form.Label>
-                    <Form.Control
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      disabled={loading}
-                      className="py-2"
-                    />
-                    <small className="text-muted">At least 6 characters</small>
-                  </Form.Group>
+              {/* Date of Birth */}
+              <Form.Group className="mb-3">
+                <Form.Label className="text-white">Date of Birth *</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  required
+                  className="bg-dark text-white border-secondary"
+                />
+              </Form.Group>
 
-                  {/* Confirm Password Field */}
-                  <Form.Group className="mb-4">
-                    <Form.Label className="form-label mb-2">Confirm Password</Form.Label>
-                    <Form.Control
-                      type="password"
-                      placeholder="••••••••"
-                      value={passwordConfirm}
-                      onChange={(e) => setPasswordConfirm(e.target.value)}
-                      required
-                      disabled={loading}
-                      className="py-2"
-                    />
-                  </Form.Group>
+              {/* Gender */}
+              <Form.Group className="mb-3">
+                <Form.Label className="text-white">Gender *</Form.Label>
+                <Form.Select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  required
+                  className="bg-dark text-white border-secondary"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </Form.Select>
+              </Form.Group>
 
-                  {/* Signup Button */}
-                  <Button
-                    className="btn-gradient-purple w-100 py-2 mb-4"
-                    type="submit"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <Spinner animation="border" size="sm" className="me-2" />
-                        Creating account...
-                      </>
-                    ) : (
-                      'Create Account'
-                    )}
-                  </Button>
-                </Form>
+              {/* Country */}
+              <Form.Group className="mb-3">
+                <Form.Label className="text-white">Country *</Form.Label>
+                <Form.Select
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  required
+                  className="bg-dark text-white border-secondary"
+                >
+                  <option value="">Select Country</option>
+                  {countries.map((c, idx) => (
+                    <option key={idx} value={c}>{c}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
 
-                {/* Divider */}
-                <div className="d-flex align-items-center my-4">
-                  <hr className="flex-grow-1" style={{ borderColor: 'rgba(148, 163, 184, 0.2)' }} />
-                  <span className="px-3 text-muted small">or</span>
-                  <hr className="flex-grow-1" style={{ borderColor: 'rgba(148, 163, 184, 0.2)' }} />
-                </div>
+              {/* State */}
+              <Form.Group className="mb-3">
+                <Form.Label className="text-white">State/Region</Form.Label>
+                <Form.Select
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  className="bg-dark text-white border-secondary"
+                  disabled={!country || states.length === 0}
+                >
+                  <option value="">Select State</option>
+                  {states.map((s, idx) => (
+                    <option key={idx} value={s}>{s}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
 
-                {/* Login Link */}
-                <p className="text-center text-muted mb-0 small">
-                  Already have an account?{' '}
-                  <Link to="/login" className="text-primary fw-bold text-decoration-none">
-                    Sign In
-                  </Link>
-                </p>
-              </Card.Body>
-            </Card>
+              {/* Institution */}
+              <Form.Group className="mb-3">
+                <Form.Label className="text-white">Institution/Organization</Form.Label>
+                <Form.Control
+                  type="text"
+                  list="universities"
+                  value={institution}
+                  onChange={(e) => setInstitution(e.target.value)}
+                  className="bg-dark text-white border-secondary"
+                  placeholder="Type or select from list"
+                />
+                <datalist id="universities">
+                  {universities.map((u, idx) => (
+                    <option key={idx} value={u} />
+                  ))}
+                </datalist>
+              </Form.Group>
 
-            {/* Footer */}
-            <p className="text-center text-muted mt-4 small">
-              By signing up, you agree to our Terms of Service and Privacy Policy
-            </p>
-          </Col>
-        </Row>
+              {/* Password */}
+              <Form.Group className="mb-3">
+                <Form.Label className="text-white">Password *</Form.Label>
+                <Form.Control
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="bg-dark text-white border-secondary"
+                />
+              </Form.Group>
+
+              {/* Confirm Password */}
+              <Form.Group className="mb-4">
+                <Form.Label className="text-white">Confirm Password *</Form.Label>
+                <Form.Control
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="bg-dark text-white border-secondary"
+                />
+              </Form.Group>
+
+              <Button 
+                disabled={loading} 
+                className="btn-gradient w-100 fw-semibold" 
+                type="submit"
+              >
+                {loading ? <Spinner animation="border" size="sm" /> : 'Sign Up'}
+              </Button>
+            </Form>
+
+            <div className="text-center mt-4">
+              <p className="text-muted small">
+                Already have an account? <Link to="/login" className="text-primary">Log In</Link>
+              </p>
+            </div>
+          </Card.Body>
+        </Card>
       </Container>
     </div>
   );

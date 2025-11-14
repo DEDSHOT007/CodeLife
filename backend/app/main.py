@@ -1,16 +1,7 @@
-# from fastapi import FastAPI
-
-# app = FastAPI()
-
-# @app.get("/")
-# async def root():
-#     return {"message": "CodeLife backend is up"}
-# from app.routers import protected
-
-# app.include_router(protected.router, prefix="/user", tags=["user"])
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import protected
+from app.routers import courses_firestore
 import app.firebase_admin  # Initialize Firebase Admin on startup
 
 app = FastAPI(
@@ -30,6 +21,8 @@ app.add_middleware(
 
 # Include routers
 app.include_router(protected.router)
+app.include_router(courses_firestore.router)  # Firestore courses router
+
 
 @app.get("/")
 async def root():
