@@ -22,35 +22,47 @@ export default function EnrolledCoursesDashboard() {
 
   if (loading) {
     return (
-      <div className="min-vh-100 d-flex justify-content-center align-items-center">
-        <Spinner animation="border" />
+      <div className="page-shell d-flex justify-content-center align-items-center">
+        <Spinner animation="border" variant="light" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <Container className="py-5">
-        <Alert variant="danger">{error}</Alert>
-      </Container>
+      <div className="page-shell">
+        <Container className="page-container">
+          <Alert variant="danger">{error}</Alert>
+        </Container>
+      </div>
     );
   }
 
   return (
-    <Container className="py-5">
-      <h2 className="mb-4">My Enrolled Courses</h2>
-      {courses.length === 0 ? (
-        <p>You are not enrolled in any courses yet.</p>
-      ) : (
-        <ListGroup>
-          {courses.map((course, index) => (
-            <ListGroup.Item key={index}>
-              <h5>{course.title || course}</h5>
-              <p>{course.description || 'No description'}</p>
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
-      )}
-    </Container>
+    <div className="page-shell">
+      <Container className="page-container">
+        <div className="mb-4">
+          <p className="section-label mb-2">Enrolled courses</p>
+          <h2 className="page-title fs-3">Your personalized syllabus</h2>
+          <p className="page-subtitle">Pick up where you left off and keep your streak alive.</p>
+        </div>
+        <Card className="card-glass border-0">
+          <Card.Body className="p-4">
+            {courses.length === 0 ? (
+              <p className="text-muted mb-0">You are not enrolled in any courses yet.</p>
+            ) : (
+              <ListGroup variant="flush">
+                {courses.map((course, index) => (
+                  <ListGroup.Item key={index} className="bg-transparent">
+                    <h5 className="mb-1">{course.title || course}</h5>
+                    <p className="text-muted mb-0">{course.description || 'No description provided.'}</p>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            )}
+          </Card.Body>
+        </Card>
+      </Container>
+    </div>
   );
 }

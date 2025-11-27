@@ -17,7 +17,8 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from firebase_admin import auth
-from typing import Dict
+from typing import Dict , Optional
+import inspect
 
 security = HTTPBearer()
 
@@ -56,3 +57,13 @@ async def verify_firebase_token(
             detail=f"Authentication failed: {str(e)}",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+async def verify_firebase_token_optional(request):
+    try:
+        result = verify_firebase_token()   # call existing function (adjust signature)
+        if inspect.isawaitable(result):
+            result = await result  # await async token verifier
+
+        return result
+    except Exception:
+        return None

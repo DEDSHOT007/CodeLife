@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Button, Alert, Spinner, Navbar, Nav } from 'react-bootstrap';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Row, Col, Card, Button, Alert, Spinner, ProgressBar } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
-  const { currentUser, logout } = useAuth();
+  const { logout } = useAuth();
   const [profile, setProfile] = useState(null);
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,16 +15,14 @@ export default function Dashboard() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [profileData, progressData] = await Promise.all([
-          api.getUserProfile(),
-          api.getUserProgress(),
-        ]);
+        const [profileData, progressData] = await Promise.all([api.getUserProfile(), api.getUserProgress()]);
         setProfile(profileData);
         setProgress(progressData);
-      } catch (error) {
-        setError('Failed to load data: ' + error.message);
+      } catch (err) {
+        setError('Failed to load data: ' + err.message);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     loadData();
@@ -34,210 +32,310 @@ export default function Dashboard() {
     try {
       await logout();
       navigate('/login');
-    } catch (error) {
+    } catch (err) {
       setError('Failed to log out');
     }
   }
 
+  const progressPercentage = useMemo(() => Math.round(progress?.progress_percentage ?? 0), [progress]);
+  const lessonsCompleted = progress?.lessons_completed ?? progress?.courses_completed ?? 0;
+  const userInitial = profile?.email?.charAt(0)?.toUpperCase() ?? 'C';
+  const userHandle = profile?.email?.split('@')[0] ?? 'explorer';
+
+  const statCards = [
+    {
+      id: 'courses',
+      label: 'Courses completed',
+      value: progress?.courses_completed ?? 0,
+      delta: '+ Keep exploring new paths',
+      accent: 'stat-card--blue',
+    },
+    {
+      id: 'labs',
+      label: 'Labs conquered',
+      value: progress?.labs_completed ?? 0,
+      delta: 'Hands-on mastery',
+      accent: 'stat-card--teal',
+    },
+    {
+      id: 'lessons',
+      label: 'Lessons finished',
+      value: lessonsCompleted,
+      delta: 'Consistency is paying off',
+      accent: 'stat-card--sunset',
+    },
+  ];
+
+  const quickActions = [
+    {
+      id: 'learning-hub',
+      icon: '📚',
+      label: 'Learning Hub',
+      desc: 'Curated courses & guided tracks',
+      route: '/learning-hub',
+    },
+    {
+      id: 'progress',
+      icon: '📈',
+      label: 'My Progress',
+      desc: 'Visualize streaks and milestones',
+      route: '/progress',
+    },
+    {
+      id: 'courses',
+      icon: '🗂️',
+      label: 'My Courses',
+      desc: 'Resume where you left off',
+      route: '/my-courses',
+    },
+    {
+      id: 'pentest',
+      icon: '🛡️',
+      label: 'Pentesting Toolkit',
+      desc: 'Run specialized security scans',
+      route: '/pentesting',
+    },
+  ];
+
+  const focusAreas = [
+    {
+      id: 'cloud',
+      title: 'Cloud defense lab',
+      detail: 'Strengthen posture with IAM drills',
+      tag: 'New drop',
+    },
+    {
+      id: 'blue-team',
+      title: 'Blue team sprint',
+      detail: 'Triage simulated incidents in 15 min',
+      tag: 'Live',
+    },
+    {
+      id: 'tooling',
+      title: 'Automation toolkit',
+      detail: 'Wire up scripts for faster audits',
+      tag: 'Builder',
+    },
+  ];
+
   if (loading) {
     return (
-      <div className="bg-gradient-dark min-vh-100 d-flex align-items-center justify-content-center">
+      <div className="page-shell d-flex align-items-center justify-content-center">
         <div className="text-center">
-          <Spinner animation="border" variant="primary" className="mb-3" />
-          <p className="text-muted">Loading your dashboard...</p>
+          <Spinner animation="border" variant="light" className="mb-3" />
+          <p className="text-muted">Calibrating your dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gradient-dark min-vh-100">
-      {/* Header/Navbar */}
-      <Navbar bg="dark" expand="lg" className="border-bottom" style={{ borderColor: 'rgba(148, 163, 184, 0.2)' }}>
-        <Container>
-          <Navbar.Brand className="fw-bold" style={{ fontSize: '1.5rem' }}>
-            <span style={{ background: 'linear-gradient(135deg, #60a5fa 0%, #a855f7 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              CodeLife
-            </span>
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="ms-auto">
-              <Button variant="outline-primary" size="sm" onClick={handleLogout}>
-                Logout
-              </Button>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
+    <div className="page-shell">
+      <div className="page-container">
+        <header className="glass-nav d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+          <div>
+            <p className="mb-1 text-muted small">CodeLife Control Center</p>
+            <h1 className="h4 mb-0 brand-gradient fw-bold">CodeLife</h1>
+          </div>
+          <div className="d-flex flex-wrap gap-2">
+            <Button className="btn-modern-secondary" onClick={() => navigate('/learning-hub')}>
+              Explore Learning Hub
+            </Button>
+            <Button className="btn-modern-primary" onClick={handleLogout}>
+              Log out
+            </Button>
+          </div>
+        </header>
 
-      {/* Main Content */}
-      <Container className="py-5">
-        {/* Error Alert */}
         {error && (
-          <Alert variant="danger" className="mb-4 animate-slideIn" onClose={() => setError('')} dismissible>
+          <Alert variant="danger" className="mb-4 animate-slideIn" dismissible onClose={() => setError('')}>
             {error}
           </Alert>
         )}
 
-        {/* Welcome Section */}
-        <div className="mb-5 animate-slideIn">
-          <h2 className="h3 fw-bold text-white">Welcome, {profile?.email}!</h2>
-          <p className="text-muted">Get ready to master cybersecurity through interactive learning</p>
-        </div>
+        <section className="surface-blur hero-panel mb-4 animate-slideIn">
+          <div className="flex-grow-1">
+            <p className="eyebrow">Mission dashboard</p>
+            <h2 className="page-title">Welcome back, {userHandle}</h2>
+            <p className="page-subtitle">
+              Keep the momentum going with fresh labs, guided defensive playbooks, and live pentesting utilities.
+            </p>
+            <div className="d-flex flex-wrap gap-3 mt-4">
+              <Button className="btn-modern-primary" onClick={() => navigate('/learning-hub')}>
+                Continue learning
+              </Button>
+              <Button className="btn-modern-secondary" onClick={() => navigate('/pentesting')}>
+                Launch toolkit
+              </Button>
+            </div>
+          </div>
 
-        {/* Profile and Progress Cards */}
-        <Row className="g-4 mb-5">
-          {/* User Profile Card */}
-          <Col lg={6} md={12}>
-            <Card className="card-glass border-0 h-100 shadow-lg animate-fadeIn">
+          <div className="hero-progress surface-soft">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <p className="text-muted small mb-1">Overall progress</p>
+                <h3 className="mb-0">{progressPercentage}%</h3>
+              </div>
+              <span className="badge-pill">Goal · 80%</span>
+            </div>
+            <ProgressBar
+              now={progressPercentage}
+              variant="info"
+              style={{ height: '10px', borderRadius: '999px' }}
+            />
+            <div className="d-flex justify-content-between mt-3 text-muted small">
+              <span>{progress?.courses_completed ?? 0} courses</span>
+              <span>{progress?.labs_completed ?? 0} labs</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="stat-grid mb-5">
+          {statCards.map((stat) => (
+            <div key={stat.id} className={`stat-card ${stat.accent} animate-fadeIn`}>
+              <p className="stat-card__label mb-2 text-uppercase">{stat.label}</p>
+              <p className="stat-card__value mb-2">{stat.value}</p>
+              <p className="stat-card__delta mb-0">{stat.delta}</p>
+            </div>
+          ))}
+        </section>
+
+        <Row className="g-4 mb-4">
+          <Col lg={5}>
+            <Card className="card-glass border-0 h-100 animate-fadeIn">
               <Card.Body className="p-4">
-                <div className="d-flex align-items-center mb-4">
+                <div className="d-flex align-items-center gap-3 mb-4">
                   <div
-                    style={{
-                      width: '60px',
-                      height: '60px',
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '24px',
-                      fontWeight: 'bold',
-                      color: 'white',
-                      marginRight: '15px',
-                    }}
+                    className="surface-soft d-flex align-items-center justify-content-center"
+                    style={{ width: 64, height: 64, borderRadius: '50%', fontSize: '1.5rem', fontWeight: 600 }}
                   >
-                    {profile?.email?.toUpperCase()}
+                    {userInitial}
                   </div>
                   <div>
-                    <h5 className="text-white mb-0">Profile</h5>
-                    <small className="text-muted">Your account information</small>
+                    <p className="text-muted small mb-1">Signed in as</p>
+                    <h5 className="mb-1">{profile?.email}</h5>
+                    <span className={`badge ${profile?.email_verified ? 'bg-success' : 'bg-warning text-dark'}`}>
+                      {profile?.email_verified ? 'Verified identity' : 'Verify your email'}
+                    </span>
                   </div>
                 </div>
 
-                {profile && (
-                  <div className="space-y-3">
-                    <div className="p-3" style={{ backgroundColor: 'rgba(71, 85, 105, 0.2)', borderRadius: '8px' }}>
-                      <small className="text-muted">Email</small>
-                      <p className="text-white fw-500 mb-0">{profile.email}</p>
-                    </div>
-                    <div className="p-3" style={{ backgroundColor: 'rgba(71, 85, 105, 0.2)', borderRadius: '8px' }}>
-                      <small className="text-muted">User ID</small>
-                      <p className="text-white fw-500 mb-0" style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {profile.uid}
-                      </p>
-                    </div>
-                    <div className="p-3" style={{ backgroundColor: 'rgba(71, 85, 105, 0.2)', borderRadius: '8px' }}>
-                      <small className="text-muted">Email Verified</small>
-                      <div className="mt-2">
-                        <span
-                          className={`badge ${profile.email_verified ? 'bg-success' : 'bg-warning'}`}
-                        >
-                          {profile.email_verified ? '✓ Verified' : 'Pending'}
-                        </span>
-                      </div>
-                    </div>
+                <div className="list-tile">
+                  <div>
+                    <p className="text-muted small mb-1">Email</p>
+                    <p className="mb-0">{profile?.email}</p>
                   </div>
-                )}
+                </div>
+                <div className="list-tile mt-3">
+                  <div className="me-3">
+                    <p className="text-muted small mb-1">User ID</p>
+                    <p className="mb-0" style={{ wordBreak: 'break-all' }}>
+                      {profile?.uid}
+                    </p>
+                  </div>
+                </div>
+
+                <Button className="btn-modern-secondary mt-4 w-100" onClick={() => navigate('/my-courses')}>
+                  Manage enrolled courses
+                </Button>
               </Card.Body>
             </Card>
           </Col>
 
-          {/* Learning Progress Card */}
-          <Col lg={6} md={12}>
-            <Card className="card-glass border-0 h-100 shadow-lg animate-fadeIn">
+          <Col lg={7}>
+            <Card className="card-glass border-0 h-100 animate-fadeIn">
               <Card.Body className="p-4">
-                <div className="d-flex align-items-center mb-4">
-                  <div
-                    style={{
-                      width: '60px',
-                      height: '60px',
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '28px',
-                      marginRight: '15px',
-                    }}
-                  >
-                    📊
-                  </div>
+                <div className="d-flex align-items-center justify-content-between mb-4">
                   <div>
-                    <h5 className="text-white mb-0">Progress</h5>
-                    <small className="text-muted">Your learning statistics</small>
+                    <p className="section-label mb-1">Snapshot</p>
+                    <h5 className="section-title mb-0">Learning momentum</h5>
+                  </div>
+                  <Button variant="link" className="btn-modern-ghost p-0 text-muted" onClick={() => navigate('/progress')}>
+                    View detailed stats →
+                  </Button>
+                </div>
+                <Row className="g-3">
+                  <Col md={6}>
+                    <div className="surface-card p-3 h-100">
+                      <p className="text-muted small mb-1">Courses completed</p>
+                      <h3 className="mb-0">{progress?.courses_completed ?? 0}</h3>
+                      <small className="text-muted">Foundation locked in</small>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="surface-card p-3 h-100">
+                      <p className="text-muted small mb-1">Labs completed</p>
+                      <h3 className="mb-0">{progress?.labs_completed ?? 0}</h3>
+                      <small className="text-muted">Hands-on practice</small>
+                    </div>
+                  </Col>
+                </Row>
+                <div className="surface-soft p-3 rounded-4 mt-3">
+                  <p className="text-muted small mb-1">Next checkpoint</p>
+                  <div className="d-flex align-items-center justify-content-between">
+                    <div>
+                      <h4 className="mb-0">{Math.max(4, (progress?.courses_completed ?? 0) + 1)} courses</h4>
+                      <small className="text-muted">Unlock the Strategy badge</small>
+                    </div>
+                    <Button className="btn-modern-primary" onClick={() => navigate('/learning-hub')}>
+                      Start a course
+                    </Button>
                   </div>
                 </div>
-
-                {progress && (
-                  <div className="space-y-3">
-                    <div className="p-3" style={{ backgroundColor: 'rgba(71, 85, 105, 0.2)', borderRadius: '8px' }}>
-                      <small className="text-muted">Courses Completed</small>
-                      <p className="text-white fw-bold mb-0" style={{ fontSize: '28px' }}>
-                        {progress.courses_completed}
-                      </p>
-                    </div>
-                    <div className="p-3" style={{ backgroundColor: 'rgba(71, 85, 105, 0.2)', borderRadius: '8px' }}>
-                      <small className="text-muted">Labs Completed</small>
-                      <p className="text-white fw-bold mb-0" style={{ fontSize: '28px' }}>
-                        {progress.labs_completed}
-                      </p>
-                    </div>
-                  </div>
-                )}
               </Card.Body>
             </Card>
           </Col>
         </Row>
 
-        {/* Quick Actions */}
-        <Card className="card-glass border-0 shadow-lg animate-fadeIn">
-          <Card.Body className="p-4">
-            <h5 className="text-white mb-4 fw-bold">Quick Actions</h5>
-            <div className="mb-3 d-flex">
-              <Button variant="primary" onClick={() => navigate('/learning-hub')}>
-                📚 Learning Hub
-              </Button>
-              <Button variant="success" className="ms-2" onClick={() => navigate('/progress')}>
-                📊 My Progress
-              </Button>
-              <Button variant="info" className="ms-2" onClick={() => navigate('/my-courses')}>
-                📖 My Courses
-              </Button>
-              <Button variant="warning" className="ms-2" onClick={() => navigate('/pentesting')}>
-                🔒 Pentesting Toolkit
-              </Button>
-            </div>
-            <Row className="g-3">
-              <Col md={4}>
-                <div className="p-3 text-center" style={{ backgroundColor: 'rgba(71, 85, 105, 0.2)', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s' }} 
-                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(71, 85, 105, 0.4)'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(71, 85, 105, 0.2)'}>
-                  <p className="text-muted small mb-2">Start Learning</p>
-                  <p className="text-white fw-semibold mb-0">→ Browse Courses</p>
+        <Row className="g-4">
+          <Col xl={8}>
+            <Card className="card-glass border-0 animate-fadeIn">
+              <Card.Body className="p-4">
+                <div className="d-flex align-items-center justify-content-between mb-4">
+                  <div>
+                    <p className="section-label mb-1">Quick actions</p>
+                    <h5 className="section-title mb-0">Jump back into flow</h5>
+                  </div>
                 </div>
-              </Col>
-              <Col md={4}>
-                <div className="p-3 text-center" style={{ backgroundColor: 'rgba(71, 85, 105, 0.2)', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s' }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(71, 85, 105, 0.4)'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(71, 85, 105, 0.2)'}>
-                  <p className="text-muted small mb-2">Practice Skills</p>
-                  <p className="text-white fw-semibold mb-0">→ Launch Lab</p>
+                <div className="quick-link-grid">
+                  {quickActions.map((action) => (
+                    <button
+                      type="button"
+                      key={action.id}
+                      className="quick-link-card"
+                      onClick={() => navigate(action.route)}
+                    >
+                      <div className="quick-link-card__icon">{action.icon}</div>
+                      <p className="quick-link-card__label">{action.label}</p>
+                      <p className="quick-link-card__desc mb-0">{action.desc}</p>
+                    </button>
+                  ))}
                 </div>
-              </Col>
-              <Col md={4}>
-                <div className="p-3 text-center" style={{ backgroundColor: 'rgba(71, 85, 105, 0.2)', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s' }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(71, 85, 105, 0.4)'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(71, 85, 105, 0.2)'}>
-                  <p className="text-muted small mb-2">View Operations</p>
-                  <p className="text-white fw-semibold mb-0">→ Live Feed</p>
-                </div>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
-      </Container>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          <Col xl={4}>
+            <Card className="card-glass border-0 h-100 animate-fadeIn">
+              <Card.Body className="p-4">
+                <p className="section-label mb-1">Focus cues</p>
+                <h5 className="section-title mb-4">What to tackle next</h5>
+                {focusAreas.map((item) => (
+                  <div key={item.id} className="surface-card p-3 mb-3">
+                    <div className="d-flex justify-content-between align-items-start">
+                      <div>
+                        <p className="mb-1 fw-semibold">{item.title}</p>
+                        <small className="text-muted">{item.detail}</small>
+                      </div>
+                      <span className="badge-pill">{item.tag}</span>
+                    </div>
+                  </div>
+                ))}
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </div>
     </div>
   );
 }

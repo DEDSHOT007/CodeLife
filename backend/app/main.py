@@ -14,11 +14,6 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# Initialize rate limiter for the app
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
 # Configure CORS for frontend communication
 app.add_middleware(
     CORSMiddleware,
@@ -27,6 +22,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Initialize rate limiter for the app
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
 
 # Include routers
 app.include_router(protected.router)

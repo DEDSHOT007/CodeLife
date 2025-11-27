@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Spinner, Alert, ProgressBar, Badge } from 'react-bootstrap';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function CourseDetailsPage() {
@@ -10,35 +10,48 @@ export default function CourseDetailsPage() {
   const [error, setError] = useState('');
   const [activeLesson, setActiveLesson] = useState(null);
   const { currentUser } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    loadCourseDetails();
-  }, [courseId]);
+    let isMounted = true;
 
-  async function loadCourseDetails() {
-    try {
-      setLoading(true);
-      const token = await currentUser.getIdToken();
-      const response = await fetch(`http://localhost:8000/courses/${courseId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+    async function loadCourseDetails() {
+      try {
+        setLoading(true);
+        const token = await currentUser.getIdToken();
+        const response = await fetch(`http://localhost:8000/courses/${courseId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch course');
+
+        const data = await response.json();
+        if (isMounted) {
+          setCourse(data);
+          if (data.lessons && data.lessons.length > 0) {
+            setActiveLesson(data.lessons[0]);
+          }
         }
-      });
-      
-      if (!response.ok) throw new Error('Failed to fetch course');
-      
-      const data = await response.json();
-      setCourse(data);
-      if (data.lessons && data.lessons.length > 0) {
-        setActiveLesson(data.lessons);
+      } catch (err) {
+        if (isMounted) {
+          setError('Failed to load course: ' + err.message);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-    } catch (err) {
-      setError('Failed to load course: ' + err.message);
-    } finally {
-      setLoading(false);
     }
-  }
+
+    if (currentUser && courseId) {
+      loadCourseDetails();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [courseId, currentUser]);
 
   async function handleLessonComplete(lessonId) {
     try {
@@ -70,16 +83,18 @@ export default function CourseDetailsPage() {
 
   if (loading) {
     return (
-      <div className="bg-gradient-dark min-vh-100 d-flex align-items-center justify-content-center">
-        <Spinner animation="border" variant="primary" />
+      <div className="page-shell d-flex align-items-center justify-content-center">
+        <Spinner animation="border" variant="light" />
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="bg-gradient-dark min-vh-100 p-5">
-        <Alert variant="danger">Course not found</Alert>
+      <div className="page-shell">
+        <Container className="page-container">
+          <Alert variant="danger">Course not found</Alert>
+        </Container>
       </div>
     );
   }
@@ -88,27 +103,33 @@ export default function CourseDetailsPage() {
   const completionPercentage = (completedLessons / course.lessons.length) * 100;
 
   return (
-    <div className="bg-gradient-dark min-vh-100 py-5">
-      <Container fluid>
+    <div className="page-shell">
+      <Container fluid className="page-container">
+        <div className="mb-4 animate-slideIn">
+          <p className="section-label mb-1">Course detail</p>
+          <h1 className="page-title fs-2 mb-2">{course.title}</h1>
+          <p className="page-subtitle">{course.description}</p>
+        </div>
         <Row className="g-4">
           {/* Sidebar - Lessons List */}
           <Col lg={3} md={4}>
             <Card className="card-glass border-0 sticky-top" style={{ top: '20px' }}>
               <Card.Body className="p-4">
-                <h5 className="text-white fw-bold mb-3">Lessons</h5>
-                <ProgressBar 
-                  now={completionPercentage} 
+                <h5 className="section-title mb-3">Lessons</h5>
+                <ProgressBar
+                  now={completionPercentage}
                   label={`${Math.round(completionPercentage)}%`}
                   className="mb-4"
+                  style={{ height: '10px', borderRadius: '999px' }}
                 />
-                
-                <div className="lessons-list" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+
+                <div className="lessons-list" style={{ maxHeight: '520px', overflowY: 'auto' }}>
                   {course.lessons.map((lesson, index) => (
                     <Card 
                       key={lesson.id}
                       className="mb-2 border-0"
                       style={{
-                        backgroundColor: activeLesson?.id === lesson.id ? 'rgba(59, 130, 246, 0.3)' : 'rgba(71, 85, 105, 0.2)',
+                        backgroundColor: activeLesson?.id === lesson.id ? 'rgba(124, 93, 255, 0.2)' : 'rgba(255, 255, 255, 0.04)',
                         cursor: 'pointer',
                         transition: 'all 0.3s'
                       }}
@@ -135,14 +156,14 @@ export default function CourseDetailsPage() {
           {/* Main Content - Lesson Details */}
           <Col lg={9} md={8}>
             {error && <Alert variant="danger" className="mb-4">{error}</Alert>}
-            
+
             {activeLesson && (
               <Card className="card-glass border-0 shadow-lg animate-fadeIn">
                 <Card.Body className="p-5">
                   {/* Lesson Header */}
                   <div className="mb-4">
                     <div className="d-flex align-items-center justify-content-between mb-3">
-                      <h2 className="h3 text-white fw-bold mb-0">{activeLesson.title}</h2>
+                      <h2 className="h3 fw-bold mb-0">{activeLesson.title}</h2>
                       {activeLesson.completed && (
                         <Badge bg="success" className="ms-2">Completed</Badge>
                       )}
@@ -185,7 +206,7 @@ export default function CourseDetailsPage() {
 
                   {/* Article Content */}
                   <div className="mb-4">
-                    <h4 className="text-white mb-3">📖 Article</h4>
+                    <h4 className="mb-3">📖 Article</h4>
                     <div className="text-light" style={{ lineHeight: '1.8' }}>
                       {activeLesson.content}
                     </div>
@@ -194,9 +215,9 @@ export default function CourseDetailsPage() {
                   {/* Quizzes Section */}
                   {activeLesson.quizzes && activeLesson.quizzes.length > 0 && (
                     <div className="mb-4">
-                      <h4 className="text-white mb-3">📝 Quizzes</h4>
+                      <h4 className="mb-3">📝 Quizzes</h4>
                       {activeLesson.quizzes.map((quiz, index) => (
-                        <Card key={index} className="mb-3 border-0" style={{ backgroundColor: 'rgba(71, 85, 105, 0.2)' }}>
+                        <Card key={index} className="mb-3 border-0 surface-card">
                           <Card.Body className="p-3">
                             <p className="text-light fw-500 mb-3">{quiz.question}</p>
                             <div>
@@ -221,8 +242,8 @@ export default function CourseDetailsPage() {
                   )}
 
                   {/* Complete Button */}
-                  <Button 
-                    className={activeLesson.completed ? 'btn-secondary' : 'btn-gradient'}
+                  <Button
+                    className={activeLesson.completed ? 'btn-modern-secondary' : 'btn-modern-primary'}
                     size="lg"
                     onClick={() => handleLessonComplete(activeLesson.id)}
                     disabled={activeLesson.completed}

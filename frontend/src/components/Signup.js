@@ -15,7 +15,7 @@ export default function Signup() {
   const [country, setCountry] = useState('');
   const [state, setState] = useState('');
   const [institution, setInstitution] = useState('');
-  
+
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
   const [universities, setUniversities] = useState([]);
@@ -24,6 +24,8 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const db = getFirestore();
+  const today = new Date().toISOString().split('T')[0];
+  const labelClass = 'form-label fw-semibold';
 
   // Fetch countries on component mount
   useEffect(() => {
@@ -46,12 +48,22 @@ export default function Signup() {
 
   async function fetchCountries() {
     try {
-      const response = await fetch('https://restcountries.com/v3.1/all');
+      const response = await fetch('https://restcountries.com/v3.1/all?fields=name');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch countries. Status: ${response.status}`);
+      }
       const data = await response.json();
-      const countryList = data.map(c => c.name.common).sort();
+      if (!Array.isArray(data)) {
+        throw new Error('Unexpected response format for countries');
+      }
+      const countryList = data
+        .map((c) => c?.name?.common)
+        .filter(Boolean)
+        .sort();
       setCountries(countryList);
     } catch (error) {
       console.error('Failed to fetch countries:', error);
+      setCountries([]);
     }
   }
 
@@ -64,10 +76,13 @@ export default function Signup() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ country: countryName })
       });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch states. Status: ${response.status}`);
+      }
       const data = await response.json();
       
-      if (data.data && data.data.states) {
-        const stateList = data.data.states.map(s => s.name).sort();
+      if (data?.data?.states) {
+        const stateList = data.data.states.map((s) => s.name).sort();
         setStates(stateList);
       } else {
         setStates([]);
@@ -80,7 +95,7 @@ export default function Signup() {
 
   async function fetchUniversities(countryName) {
     try {
-      const response = await fetch(`http://universities.hipolabs.com/search?country=${countryName}`);
+      const response = await fetch(`https://universities.hipolabs.com/search?country=${encodeURIComponent(countryName)}`);
       const data = await response.json();
       const universityList = data.map(u => u.name).sort();
       setUniversities(universityList);
@@ -133,69 +148,72 @@ export default function Signup() {
   }
 
   return (
-    <div className="bg-gradient-dark min-vh-100 d-flex align-items-center justify-content-center py-5">
-      <Container style={{ maxWidth: '600px' }}>
+    <div className="auth-shell bg-gradient-dark">
+      <Container style={{ maxWidth: '640px' }}>
+        <div className="text-center mb-4 animate-slideIn">
+          <p className="eyebrow mb-2">Create account</p>
+          <h2 className="fw-bold mb-2 brand-gradient">Join CodeLife</h2>
+          <p className="text-muted">Personalize your security learning journey</p>
+        </div>
         <Card className="card-glass border-0 shadow-lg animate-fadeIn">
           <Card.Body className="p-5">
-            <div className="text-center mb-4">
-              <h2 className="fw-bold mb-2" style={{ 
-                background: 'linear-gradient(135deg, #60a5fa 0%, #a855f7 100%)', 
-                backgroundClip: 'text', 
-                WebkitBackgroundClip: 'text', 
-                WebkitTextFillColor: 'transparent' 
-              }}>
-                Join CodeLife
-              </h2>
-              <p className="text-muted">Create your account and start learning</p>
-            </div>
 
-            {error && <Alert variant="danger" onClose={() => setError('')} dismissible>{error}</Alert>}
+            {error && (
+              <Alert variant="danger" onClose={() => setError('')} dismissible aria-live="assertive">
+                {error}
+              </Alert>
+            )}
 
             <Form onSubmit={handleSubmit}>
-              {/* Email */}
-              <Form.Group className="mb-3">
-                <Form.Label className="text-white">Email *</Form.Label>
-                <Form.Control
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="bg-dark text-white border-secondary"
-                />
-              </Form.Group>
-
               {/* Name */}
               <Form.Group className="mb-3">
-                <Form.Label className="text-white">Full Name *</Form.Label>
+                <Form.Label className={labelClass}>Full Name *</Form.Label>
                 <Form.Control
                   type="text"
                   value={name}
+                  placeholder="Enter your full name"
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="bg-dark text-white border-secondary"
+                  className="form-control"
+                />
+              </Form.Group>
+
+              {/* Email */}
+              <Form.Group className="mb-3">
+                <Form.Label className={labelClass}>Email *</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={email}
+                  placeholder="you@example.com"
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="form-control"
                 />
               </Form.Group>
 
               {/* Date of Birth */}
               <Form.Group className="mb-3">
-                <Form.Label className="text-white">Date of Birth *</Form.Label>
+                <Form.Label className={labelClass}>Date of Birth *</Form.Label>
                 <Form.Control
                   type="date"
                   value={dob}
                   onChange={(e) => setDob(e.target.value)}
                   required
-                  className="bg-dark text-white border-secondary"
+                  className="form-control"
+                  max={today}
+                  aria-label="Date of birth"
                 />
+                <Form.Text className="text-muted">Please enter your date of birth (no future dates).</Form.Text>
               </Form.Group>
 
               {/* Gender */}
               <Form.Group className="mb-3">
-                <Form.Label className="text-white">Gender *</Form.Label>
+                <Form.Label className={labelClass}>Gender *</Form.Label>
                 <Form.Select
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
                   required
-                  className="bg-dark text-white border-secondary"
+                  className="form-control"
                 >
                   <option value="">Select Gender</option>
                   <option value="Male">Male</option>
@@ -207,12 +225,12 @@ export default function Signup() {
 
               {/* Country */}
               <Form.Group className="mb-3">
-                <Form.Label className="text-white">Country *</Form.Label>
+                <Form.Label className={labelClass}>Country *</Form.Label>
                 <Form.Select
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
                   required
-                  className="bg-dark text-white border-secondary"
+                  className="form-control"
                 >
                   <option value="">Select Country</option>
                   {countries.map((c, idx) => (
@@ -223,11 +241,11 @@ export default function Signup() {
 
               {/* State */}
               <Form.Group className="mb-3">
-                <Form.Label className="text-white">State/Region</Form.Label>
+                <Form.Label className={labelClass}>State/Region</Form.Label>
                 <Form.Select
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  className="bg-dark text-white border-secondary"
+                  className="form-control"
                   disabled={!country || states.length === 0}
                 >
                   <option value="">Select State</option>
@@ -239,13 +257,13 @@ export default function Signup() {
 
               {/* Institution */}
               <Form.Group className="mb-3">
-                <Form.Label className="text-white">Institution/Organization</Form.Label>
+                <Form.Label className={labelClass}>Institution/Organization</Form.Label>
                 <Form.Control
                   type="text"
                   list="universities"
                   value={institution}
                   onChange={(e) => setInstitution(e.target.value)}
-                  className="bg-dark text-white border-secondary"
+                  className="form-control"
                   placeholder="Type or select from list"
                 />
                 <datalist id="universities">
@@ -257,34 +275,51 @@ export default function Signup() {
 
               {/* Password */}
               <Form.Group className="mb-3">
-                <Form.Label className="text-white">Password *</Form.Label>
+                <Form.Label className={labelClass}>Password *</Form.Label>
                 <Form.Control
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-dark text-white border-secondary"
+                  minLength={6}
+                  placeholder="At least 6 characters"
+                  className="form-control"
+                  aria-label="Password"
                 />
+                <Form.Text className="text-muted">Use at least 6 characters. Consider adding numbers and symbols for strength.</Form.Text>
               </Form.Group>
 
               {/* Confirm Password */}
               <Form.Group className="mb-4">
-                <Form.Label className="text-white">Confirm Password *</Form.Label>
+                <Form.Label className={labelClass}>Confirm Password *</Form.Label>
                 <Form.Control
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="bg-dark text-white border-secondary"
+                  minLength={6}
+                  placeholder="Repeat your password"
+                  className="form-control"
+                  aria-label="Confirm password"
                 />
+                {confirmPassword && password !== confirmPassword && (
+                  <Form.Text className="text-danger">Passwords do not match</Form.Text>
+                )}
               </Form.Group>
 
-              <Button 
-                disabled={loading} 
-                className="btn-gradient w-100 fw-semibold" 
+              <Button
+                disabled={loading}
+                className="btn-modern-primary w-100 fw-semibold"
                 type="submit"
+                aria-disabled={loading}
               >
-                {loading ? <Spinner animation="border" size="sm" /> : 'Sign Up'}
+                {loading ? (
+                  <>
+                    <Spinner animation="border" size="sm" /> <span className="ms-2">Creating account...</span>
+                  </>
+                ) : (
+                  'Sign Up'
+                )}
               </Button>
             </Form>
 
