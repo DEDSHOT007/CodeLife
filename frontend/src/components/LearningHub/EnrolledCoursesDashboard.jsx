@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Spinner, Alert, ListGroup } from 'react-bootstrap';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 
 export default function EnrolledCoursesDashboard() {
   const [courses, setCourses] = useState([]);

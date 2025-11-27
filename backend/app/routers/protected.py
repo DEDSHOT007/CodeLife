@@ -2,11 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.auth import verify_firebase_token
 from app.firestore_db import UserProgressService
 
-# Import Firestore client (make sure google-cloud-firestore is installed and set up)
-from google.cloud import firestore
+# Ensure Firebase Admin SDK is initialized (loads service account JSON in backend/app)
+import app.firebase_admin  # initializes firebase_admin with credentials.Certificate(...)
+
+# Use the Firestore client exposed by firebase_admin so it uses the Admin SDK credentials
+from firebase_admin import firestore as admin_firestore
 
 router = APIRouter(prefix="/user")
-db = firestore.Client()
+# firebase_admin.firestore.client() returns a client bound to the initialized credentials
+db = admin_firestore.client()
 
 @router.get("/profile")
 async def get_profile(user=Depends(verify_firebase_token)):

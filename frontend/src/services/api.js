@@ -47,4 +47,20 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
+  // Pentesting Toolkit API methods
+  runNmapScan: (data) =>
+    authenticatedRequest('/pentest/nmap', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  runNiktoScan: (data) =>
+    authenticatedRequest('/pentest/nikto', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  runDirbScan: (data) =>
+    authenticatedRequest('/pentest/dirb', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };

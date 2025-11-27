@@ -205,6 +205,9 @@ export default function Dashboard() {
               <Button variant="info" className="ms-2" onClick={() => navigate('/my-courses')}>
                 📖 My Courses
               </Button>
+              <Button variant="warning" className="ms-2" onClick={() => navigate('/pentesting')}>
+                🔒 Pentesting Toolkit
+              </Button>
             </div>
             <Row className="g-3">
               <Col md={4}>

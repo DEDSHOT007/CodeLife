@@ -8,6 +8,7 @@ import CoursesListPage from './components/LearningHub/CoursesListPage';
 import CourseDetailsPage from './components/LearningHub/CourseDetailsPage';
 import ProgressTrackingPage from './components/LearningHub/ProgressTrackingPage';
 import EnrolledCoursesDashboard from './components/LearningHub/EnrolledCoursesDashboard';
+import PentestingToolkit from './components/PentestingToolkit';
 
 function PrivateRoute({ children }) {
   const { currentUser, loading: authLoading } = useAuth();
@@ -67,6 +68,14 @@ function App() {
             element={
               <PrivateRoute>
                 <EnrolledCoursesDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/pentesting"
+            element={
+              <PrivateRoute>
+                <PentestingToolkit />
               </PrivateRoute>
             }
           />
