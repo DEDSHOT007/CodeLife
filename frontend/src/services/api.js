@@ -70,4 +70,10 @@ export const api = {
     authenticatedRequest('/threats/refresh', {
       method: 'POST',
     }),
+  // Command Post news API methods
+  getLatestNews: () => authenticatedRequest('/news/latest'),
+  refreshNews: () =>
+    authenticatedRequest('/news/refresh', {
+      method: 'POST',
+    }),
 };

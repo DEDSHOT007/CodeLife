@@ -102,6 +102,13 @@ export default function Dashboard() {
       desc: 'Monitor OSINT feeds & threat data',
       route: '/threats',
     },
+    {
+      id: 'command-post',
+      icon: '📰',
+      label: 'Command Post',
+      desc: 'News & research intelligence',
+      route: '/command-post',
+    },
   ];
 
   const focusAreas = [

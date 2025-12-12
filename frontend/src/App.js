@@ -10,6 +10,7 @@ import ProgressTrackingPage from './components/LearningHub/ProgressTrackingPage'
 import EnrolledCoursesDashboard from './components/LearningHub/EnrolledCoursesDashboard';
 import PentestingToolkit from './components/PentestingToolkit';
 import ThreatDashboard from './components/ThreatDashboard';
+import CommandPost from './components/CommandPost';
 
 function PrivateRoute({ children }) {
   const { currentUser, loading: authLoading } = useAuth();
@@ -85,6 +86,14 @@ function App() {
             element={
               <PrivateRoute>
                 <ThreatDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/command-post"
+            element={
+              <PrivateRoute>
+                <CommandPost />
               </PrivateRoute>
             }
           />

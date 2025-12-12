@@ -7,6 +7,7 @@ from app.routers import protected
 from app.routers import courses_firestore
 from app.routers import pentesting
 from app.routers import threats
+from app.routers import news
 import app.firebase_admin  # Initialize Firebase Admin on startup
 
 app = FastAPI(
@@ -35,6 +36,7 @@ app.include_router(protected.router)
 app.include_router(courses_firestore.router)  # Firestore courses router
 app.include_router(pentesting.router)  # Pentesting toolkit router
 app.include_router(threats.router)  # Threat intelligence router
+app.include_router(news.router)  # Command Post news router
 
 
 @app.get("/")
