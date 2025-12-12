@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from app.middleware.rate_limit import limiter
 from app.routers import protected
 from app.routers import courses_firestore
 from app.routers import pentesting
+from app.routers import threats
 import app.firebase_admin  # Initialize Firebase Admin on startup
 
 app = FastAPI(
@@ -23,8 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize rate limiter for the app
-limiter = Limiter(key_func=get_remote_address)
+# Initialize rate limiter for the app (shared instance from middleware)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -34,6 +34,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.include_router(protected.router)
 app.include_router(courses_firestore.router)  # Firestore courses router
 app.include_router(pentesting.router)  # Pentesting toolkit router
+app.include_router(threats.router)  # Threat intelligence router
 
 
 @app.get("/")
