@@ -95,6 +95,13 @@ export default function Dashboard() {
       desc: 'Run specialized security scans',
       route: '/pentesting',
     },
+    {
+      id: 'threats',
+      icon: '⚠️',
+      label: 'Threat Intelligence',
+      desc: 'Monitor OSINT feeds & threat data',
+      route: '/threats',
+    },
   ];
 
   const focusAreas = [

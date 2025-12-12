@@ -44,6 +44,14 @@ async def get_latest_threats(
             threat_data = doc.to_dict()
             # Add document ID to the threat data
             threat_data['id'] = doc.id
+            # Convert Firestore Timestamp to ISO string for JSON serialization
+            if 'timestamp' in threat_data and threat_data['timestamp']:
+                timestamp = threat_data['timestamp']
+                if hasattr(timestamp, 'isoformat'):
+                    threat_data['timestamp'] = timestamp.isoformat()
+                elif hasattr(timestamp, '_seconds'):
+                    # Handle Firestore Timestamp object (if not converted by to_dict)
+                    threat_data['timestamp'] = datetime.fromtimestamp(timestamp._seconds).isoformat()
             threats.append(threat_data)
         
         return {

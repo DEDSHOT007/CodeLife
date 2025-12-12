@@ -63,4 +63,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  // Threat Intelligence API methods
+  getLatestThreats: () => authenticatedRequest('/threats/latest'),
+  getThreatStats: () => authenticatedRequest('/threats/stats'),
+  refreshThreats: () =>
+    authenticatedRequest('/threats/refresh', {
+      method: 'POST',
+    }),
 };
