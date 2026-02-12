@@ -5,7 +5,7 @@ const API_BASE_URL = 'http://localhost:8000';  // Adjust if backend runs elsewhe
 /**
  * Makes an authenticated API request to backend with Firebase ID token
  * @param {string} endpoint - API endpoint (e.g. '/user/profile')
- * @param {object} options - fetch options (method, body, headers)
+ * @param {object} options - fetch options (method, body, headers, signal)
  * @returns {Promise<object>} - JSON response
  */
 async function authenticatedRequest(endpoint, options = {}) {
@@ -48,20 +48,23 @@ export const api = {
       body: JSON.stringify(data),
     }),
   // Pentesting Toolkit API methods
-  runNmapScan: (data) =>
+  runNmapScan: (data, signal) =>
     authenticatedRequest('/pentest/nmap', {
       method: 'POST',
       body: JSON.stringify(data),
+      signal, // Pass signal for abort support
     }),
-  runNiktoScan: (data) =>
+  runNiktoScan: (data, signal) =>
     authenticatedRequest('/pentest/nikto', {
       method: 'POST',
       body: JSON.stringify(data),
+      signal,
     }),
-  runDirbScan: (data) =>
+  runDirbScan: (data, signal) =>
     authenticatedRequest('/pentest/dirb', {
       method: 'POST',
       body: JSON.stringify(data),
+      signal,
     }),
   // Threat Intelligence API methods
   getLatestThreats: () => authenticatedRequest('/threats/latest'),
@@ -75,5 +78,11 @@ export const api = {
   refreshNews: () =>
     authenticatedRequest('/news/refresh', {
       method: 'POST',
+    }),
+  // Phishing Analyzer API methods
+  analyzePhishing: (data) =>
+    authenticatedRequest('/phishing/analyze', {
+      method: 'POST',
+      body: JSON.stringify(data),
     }),
 };

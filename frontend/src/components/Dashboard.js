@@ -109,6 +109,13 @@ export default function Dashboard() {
       desc: 'News & research intelligence',
       route: '/command-post',
     },
+    {
+      id: 'phishing',
+      icon: '🎣',
+      label: 'Phishing Analyzer',
+      desc: 'Ensemble AI risk detection',
+      route: '/phishing-analyzer',
+    },
   ];
 
   const focusAreas = [

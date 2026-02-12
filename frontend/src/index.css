@@ -402,6 +402,38 @@ a:hover {
   color: #ffffff !important;
 }
 
+/* Dark dropdown styling for auth selects */
+.auth-shell select,
+.auth-shell .form-select {
+  background-color: #1f2937;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f8fafc;
+}
+
+.auth-shell select:focus,
+.auth-shell .form-select:focus {
+  background-color: #111827;
+  border-color: #7c5dff;
+  box-shadow: 0 0 0 0.2rem rgba(124, 93, 255, 0.28);
+}
+
+.auth-shell select:disabled,
+.auth-shell .form-select:disabled {
+  background-color: #111827;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.auth-shell select option,
+.auth-shell .form-select option {
+  background-color: #111827;
+  color: #f8fafc;
+}
+
+.auth-shell select option:checked,
+.auth-shell .form-select option:checked {
+  background-color: #1f2937;
+}
+
 .alert {
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.12);

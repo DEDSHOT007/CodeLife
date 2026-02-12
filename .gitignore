@@ -36,3 +36,12 @@ Thumbs.db
 # IDE/editor folders
 .vscode/
 .idea/
+backend/app/models/logreg_20k.pkl
+backend/app/models/svm_20k.pkl
+backend/app/models/tfidf_20k.pkl
+backend/app/models/distilbert-phishing/config.json
+backend/app/models/distilbert-phishing/training_args.bin
+backend/app/models/distilbert-phishing/trainer_state.json
+backend/app/models/distilbert-phishing/scheduler.pt
+backend/app/models/distilbert-phishing/rng_state.pth
+.gitignore

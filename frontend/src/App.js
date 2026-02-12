@@ -11,6 +11,7 @@ import EnrolledCoursesDashboard from './components/LearningHub/EnrolledCoursesDa
 import PentestingToolkit from './components/PentestingToolkit';
 import ThreatDashboard from './components/ThreatDashboard';
 import CommandPost from './components/CommandPost';
+import PhishingAnalyzer from './components/PhishingAnalyzer';
 
 function PrivateRoute({ children }) {
   const { currentUser, loading: authLoading } = useAuth();
@@ -94,6 +95,14 @@ function App() {
             element={
               <PrivateRoute>
                 <CommandPost />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/phishing-analyzer"
+            element={
+              <PrivateRoute>
+                <PhishingAnalyzer />
               </PrivateRoute>
             }
           />

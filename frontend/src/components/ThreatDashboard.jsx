@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Badge, Button, Spinner, Alert } from 'react-bootstrap';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Container, Row, Col, Card, Badge, Button, Spinner, Alert, Accordion } from 'react-bootstrap';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { api } from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,59 @@ const ThreatDashboard = () => {
   const [error, setError] = useState('');
   const [lastUpdated, setLastUpdated] = useState(null);
   const navigate = useNavigate();
+  
+  // Deduplicate threats by indicators, keeping only the latest by timestamp
+  const { latestThreats, olderThreats } = useMemo(() => {
+    if (!threats || threats.length === 0) {
+      return { latestThreats: [], olderThreats: [] };
+    }
+
+    // #region agent log
+    const logData = { location: 'ThreatDashboard.jsx:deduplicate:entry', message: 'Deduplicating threats', data: { total: threats.length }, timestamp: new Date().toISOString(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'E' };
+    fetch('http://127.0.0.1:7242/ingest/10ce20dc-ddc8-4f37-8bb9-4ead1f9997c1', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(logData) }).catch(() => {});
+    // #endregion
+
+    // Group threats by sorted indicator tuple (for deduplication)
+    const threatMap = new Map();
+    
+    threats.forEach(threat => {
+      const indicators = threat.indicators || [];
+      const key = JSON.stringify(indicators.sort());
+      const timestamp = threat.timestamp ? new Date(threat.timestamp).getTime() : 0;
+      
+      // Keep only the latest threat for each indicator set
+      if (!threatMap.has(key)) {
+        threatMap.set(key, threat);
+      } else {
+        const existing = threatMap.get(key);
+        const existingTimestamp = existing.timestamp ? new Date(existing.timestamp).getTime() : 0;
+        if (timestamp > existingTimestamp) {
+          threatMap.set(key, threat);
+        }
+      }
+    });
+
+    // Convert back to array and sort by timestamp (newest first)
+    const deduplicated = Array.from(threatMap.values()).sort((a, b) => {
+      const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+      const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    // #region agent log
+    const logData2 = { location: 'ThreatDashboard.jsx:deduplicate:exit', message: 'Deduplication complete', data: { original: threats.length, deduplicated: deduplicated.length }, timestamp: new Date().toISOString(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'E' };
+    fetch('http://127.0.0.1:7242/ingest/10ce20dc-ddc8-4f37-8bb9-4ead1f9997c1', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(logData2) }).catch(() => {});
+    // #endregion
+
+    // Split into latest (first 10) and older (rest)
+    const latest = deduplicated.slice(0, 10);
+    const older = deduplicated.slice(10);
+
+    return {
+      latestThreats: latest,
+      olderThreats: older
+    };
+  }, [threats]);
 
   // Fetch threat data on component mount
   useEffect(() => {
@@ -210,53 +263,116 @@ const ThreatDashboard = () => {
               <Col md={12}>
                 <Card className="card-glass border-0 shadow-sm">
                   <Card.Header className="bg-dark text-white d-flex justify-content-between align-items-center">
-                    <Card.Title className="mb-0">Latest Threats ({threats.length})</Card.Title>
+                    <Card.Title className="mb-0">
+                      Latest Threats ({latestThreats.length} unique)
+                      {threats.length > latestThreats.length && (
+                        <small className="text-muted ms-2">({threats.length - latestThreats.length} duplicates hidden)</small>
+                      )}
+                    </Card.Title>
                   </Card.Header>
                   <Card.Body className="p-0">
-                    {threats.length > 0 ? (
-                      <div className="table-responsive">
-                        <table className="table table-hover mb-0">
-                          <thead className="table-light">
-                            <tr>
-                              <th>Type</th>
-                              <th>Severity</th>
-                              <th>Source</th>
-                              <th>Description</th>
-                              <th>Indicators</th>
-                              <th>Timestamp</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {threats.map((threat, idx) => (
-                              <tr key={idx}>
-                                <td>
-                                  <Badge bg="info">{threat.type}</Badge>
-                                </td>
-                                <td>
-                                  <Badge bg={getSeverityVariant(threat.severity)}>
-                                    {threat.severity}
-                                  </Badge>
-                                </td>
-                                <td><small>{threat.source}</small></td>
-                                <td><small>{threat.description}</small></td>
-                                <td>
-                                  <small>
-                                    {threat.indicators?.slice(0, 2).join(', ')}
-                                    {threat.indicators?.length > 2 && ` +${threat.indicators.length - 2}`}
-                                  </small>
-                                </td>
-                                <td>
-                                  <small>
-                                    {threat.timestamp 
-                                      ? new Date(threat.timestamp).toLocaleString() 
-                                      : 'N/A'}
-                                  </small>
-                                </td>
+                    {latestThreats.length > 0 ? (
+                      <>
+                        <div className="table-responsive">
+                          <table className="table table-hover mb-0">
+                            <thead className="table-light">
+                              <tr>
+                                <th>Type</th>
+                                <th>Severity</th>
+                                <th>Source</th>
+                                <th>Description</th>
+                                <th>Indicators</th>
+                                <th>Timestamp</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                            </thead>
+                            <tbody>
+                              {latestThreats.map((threat, idx) => (
+                                <tr key={threat.id || idx}>
+                                  <td>
+                                    <Badge bg="info">{threat.type}</Badge>
+                                  </td>
+                                  <td>
+                                    <Badge bg={getSeverityVariant(threat.severity)}>
+                                      {threat.severity}
+                                    </Badge>
+                                  </td>
+                                  <td><small>{threat.source}</small></td>
+                                  <td><small>{threat.description}</small></td>
+                                  <td>
+                                    <small>
+                                      {threat.indicators?.slice(0, 2).join(', ')}
+                                      {threat.indicators?.length > 2 && ` +${threat.indicators.length - 2}`}
+                                    </small>
+                                  </td>
+                                  <td>
+                                    <small>
+                                      {threat.timestamp 
+                                        ? new Date(threat.timestamp).toLocaleString() 
+                                        : 'N/A'}
+                                    </small>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        {olderThreats.length > 0 && (
+                          <Accordion className="border-top">
+                            <Accordion.Item eventKey="0" className="border-0">
+                              <Accordion.Header className="bg-light">
+                                <small className="text-muted">
+                                  Older Threats ({olderThreats.length})
+                                </small>
+                              </Accordion.Header>
+                              <Accordion.Body className="p-0">
+                                <div className="table-responsive">
+                                  <table className="table table-sm table-hover mb-0">
+                                    <thead className="table-light">
+                                      <tr>
+                                        <th>Type</th>
+                                        <th>Severity</th>
+                                        <th>Source</th>
+                                        <th>Description</th>
+                                        <th>Indicators</th>
+                                        <th>Timestamp</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {olderThreats.map((threat, idx) => (
+                                        <tr key={threat.id || `older-${idx}`}>
+                                          <td>
+                                            <Badge bg="info">{threat.type}</Badge>
+                                          </td>
+                                          <td>
+                                            <Badge bg={getSeverityVariant(threat.severity)}>
+                                              {threat.severity}
+                                            </Badge>
+                                          </td>
+                                          <td><small>{threat.source}</small></td>
+                                          <td><small>{threat.description}</small></td>
+                                          <td>
+                                            <small>
+                                              {threat.indicators?.slice(0, 2).join(', ')}
+                                              {threat.indicators?.length > 2 && ` +${threat.indicators.length - 2}`}
+                                            </small>
+                                          </td>
+                                          <td>
+                                            <small>
+                                              {threat.timestamp 
+                                                ? new Date(threat.timestamp).toLocaleString() 
+                                                : 'N/A'}
+                                            </small>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </Accordion.Body>
+                            </Accordion.Item>
+                          </Accordion>
+                        )}
+                      </>
                     ) : (
                       <p className="text-muted text-center py-4">No threats available. Click "Refresh Live Feeds" to fetch data.</p>
                     )}

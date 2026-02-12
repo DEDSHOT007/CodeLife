@@ -5,3 +5,7 @@ firebase-admin
 slowapi
 aiohttp
 feedparser
+transformers
+torch
+scikit-learn
+beautifulsoup4
