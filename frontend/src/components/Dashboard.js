@@ -130,6 +130,13 @@ export default function Dashboard() {
       desc: 'Isolated lab environments for practice',
       route: '/sandbox/default',
     },
+    {
+      id: 'pqc-lab',
+      icon: '⚛️',
+      label: 'PQC Lab',
+      desc: 'Post-Quantum Cryptography experimentation',
+      route: '/pqc-lab',
+    },
   ];
 
   const focusAreas = [

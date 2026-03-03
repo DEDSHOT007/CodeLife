@@ -88,7 +88,10 @@ Context Guidelines:
 Current User Context:
 """
         if user_context:
-            system_prompt += f"\n- Current Path: {user_context.get('path', 'Unknown')}"
+            path = user_context.get('path', 'Unknown')
+            system_prompt += f"\n- Current Path: {path}"
+            if "pqc-lab" in path:
+                system_prompt += "\n- Context Note: The user is currently in the Post-Quantum Cryptography Lab. Your explanations should cover Shor's Algorithm, NIST standards (like CRYSTALS-Kyber/Dilithium), lattice-based concepts, and key size tradeoffs."
         
         user_message = f"""Course Material:
 {context_text}

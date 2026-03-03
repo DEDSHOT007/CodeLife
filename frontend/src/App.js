@@ -132,6 +132,14 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/pqc-lab"
+            element={
+              <PrivateRoute>
+                <PQCLab />
+              </PrivateRoute>
+            }
+          />
           <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
       </AuthProvider>

@@ -113,4 +113,34 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  // PQC Lab API methods
+  executePQC: (algorithm) => {
+    // Routes to either /execute/kyber or /execute/dilithium based on frontend algo selection
+    const endpoint = algorithm.includes("Kyber") ? "/execute/kyber" : "/execute/dilithium";
+    return authenticatedRequest(`/pqc${endpoint}`, {
+      method: 'POST',
+    });
+  },
+  benchmarkPQC: (data) => {
+    const user = auth.currentUser;
+    return authenticatedRequest('/pqc/benchmark', {
+      method: 'POST',
+      body: JSON.stringify({ ...data, user_id: user?.uid }),
+    });
+  },
+  submitPQCScore: (scoreDelta) => {
+    const user = auth.currentUser;
+    return authenticatedRequest('/pqc/score', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: user?.uid, score_delta: scoreDelta }),
+    });
+  },
+  completePQCModule: () => {
+    const user = auth.currentUser;
+    return authenticatedRequest('/pqc/complete', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: user?.uid, score_delta: 0 }),
+    });
+  }
 };

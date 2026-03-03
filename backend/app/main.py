@@ -12,6 +12,7 @@ from app.routers import phishing
 from app.routers import cy
 from app.routers import sandbox
 from app.routers import code_analysis
+from app.routers import pqc_routes
 import app.firebase_admin  # Initialize Firebase Admin on startup
 
 app = FastAPI(
@@ -45,6 +46,7 @@ app.include_router(phishing.router) # Phishing Analyzer router
 app.include_router(cy.router) # Cy AI Tutor router
 app.include_router(sandbox.router) # Sandbox router
 app.include_router(code_analysis.router) # Code Analysis router
+app.include_router(pqc_routes.router) # PQC Lab router
 
 
 @app.get("/")

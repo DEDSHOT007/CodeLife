@@ -1,0 +1,43 @@
+# Use an official Python runtime as a parent image
+FROM python:3.10-slim
+
+# Set non-interactive timezone
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies for liboqs
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    ninja-build \
+    git \
+    libssl-dev \
+    astyle \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /tmp
+
+# Clone and build liboqs
+RUN git clone -b main https://github.com/open-quantum-safe/liboqs.git && \
+    cd liboqs && \
+    mkdir build && cd build && \
+    cmake -GNinja -DBUILD_SHARED_LIBS=ON -DOQS_USE_OPENSSL=OFF .. && \
+    ninja && ninja install && \
+    cd ../.. && rm -rf liboqs
+
+# Set environment variable for liboqs
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+# Clone and install oqs-python
+RUN git clone -b main https://github.com/open-quantum-safe/liboqs-python.git && \
+    cd liboqs-python && \
+    pip install --no-cache-dir . && \
+    cd .. && rm -rf liboqs-python
+
+# Create a non-root user
+RUN useradd -m pqcuser
+USER pqcuser
+WORKDIR /home/pqcuser
+
+# Command will be overridden by the sandbox runner
+CMD ["python3"]
