@@ -9,6 +9,9 @@ from app.routers import pentesting
 from app.routers import threats
 from app.routers import news
 from app.routers import phishing
+from app.routers import cy
+from app.routers import sandbox
+from app.routers import code_analysis
 import app.firebase_admin  # Initialize Firebase Admin on startup
 
 app = FastAPI(
@@ -39,6 +42,9 @@ app.include_router(pentesting.router)  # Pentesting toolkit router
 app.include_router(threats.router)  # Threat intelligence router
 app.include_router(news.router)  # Command Post news router
 app.include_router(phishing.router) # Phishing Analyzer router
+app.include_router(cy.router) # Cy AI Tutor router
+app.include_router(sandbox.router) # Sandbox router
+app.include_router(code_analysis.router) # Code Analysis router
 
 
 @app.get("/")

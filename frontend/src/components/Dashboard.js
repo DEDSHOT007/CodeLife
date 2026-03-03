@@ -116,6 +116,20 @@ export default function Dashboard() {
       desc: 'Ensemble AI risk detection',
       route: '/phishing-analyzer',
     },
+    {
+      id: 'code-analysis',
+      icon: '🔬',
+      label: 'Code Analysis Suite',
+      desc: 'Scan code for security vulnerabilities',
+      route: '/analysis',
+    },
+    {
+      id: 'sandbox',
+      icon: '🖥️',
+      label: 'Cyber Sandbox',
+      desc: 'Isolated lab environments for practice',
+      route: '/sandbox/default',
+    },
   ];
 
   const focusAreas = [

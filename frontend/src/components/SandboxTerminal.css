@@ -1,0 +1,12 @@
+.sandbox-terminal-card {
+    border: 1px solid #333;
+    overflow: hidden;
+}
+
+.terminal-frame {
+    background-color: #000;
+}
+
+.bg-black {
+    background-color: #000 !important;
+}

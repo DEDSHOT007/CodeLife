@@ -85,4 +85,32 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  // Cy AI Tutor API methods
+  cyChat: (data) =>
+    authenticatedRequest('/cy/chat', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  cyHistory: () => authenticatedRequest('/cy/history'),
+
+  // Sandbox API methods
+  startLab: (labId) => {
+    const user = auth.currentUser;
+    return authenticatedRequest('/sandbox/start', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: user.uid, lab_id: labId }),
+    });
+  },
+  stopLab: (containerId) =>
+    authenticatedRequest(`/sandbox/stop/${containerId}`, {
+      method: 'POST',
+    }),
+  getLabStatus: () => authenticatedRequest('/sandbox/status'),
+
+  // Code Analysis API methods
+  analyzeCode: (data) =>
+    authenticatedRequest('/analysis/scan', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };

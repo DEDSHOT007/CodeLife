@@ -12,6 +12,9 @@ import PentestingToolkit from './components/PentestingToolkit';
 import ThreatDashboard from './components/ThreatDashboard';
 import CommandPost from './components/CommandPost';
 import PhishingAnalyzer from './components/PhishingAnalyzer';
+import CyTutor from './components/CyTutor';
+import SandboxTerminal from './components/SandboxTerminal';
+import CodeEditor from './components/CodeEditor';
 
 function PrivateRoute({ children }) {
   const { currentUser, loading: authLoading } = useAuth();
@@ -24,7 +27,12 @@ function PrivateRoute({ children }) {
     );
   }
 
-  return currentUser ? children : <Navigate to="/login" />;
+  return currentUser ? (
+    <>
+      {children}
+      <CyTutor />
+    </>
+  ) : <Navigate to="/login" />;
 }
 
 function App() {
@@ -103,6 +111,24 @@ function App() {
             element={
               <PrivateRoute>
                 <PhishingAnalyzer />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/sandbox/:labId"
+            element={
+              <PrivateRoute>
+                <div className="p-4" style={{ height: '90vh' }}>
+                  <SandboxTerminal />
+                </div>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/analysis"
+            element={
+              <PrivateRoute>
+                <CodeEditor />
               </PrivateRoute>
             }
           />

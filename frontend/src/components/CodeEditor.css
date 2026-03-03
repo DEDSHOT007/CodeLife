@@ -1,0 +1,65 @@
+/* Code Analysis Suite Styles */
+
+.code-lang-select {
+    width: 150px;
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 10px !important;
+    font-size: 0.85rem;
+}
+
+.code-lang-select:focus {
+    border-color: #7c5dff !important;
+    box-shadow: 0 0 0 0.2rem rgba(124, 93, 255, 0.2) !important;
+}
+
+.code-lang-select option {
+    background-color: #111827;
+    color: #f8fafc;
+}
+
+.editor-wrapper {
+    border-radius: 0 0 0 20px;
+    overflow: hidden;
+}
+
+.results-panel {
+    padding: 1.25rem;
+    background: rgba(10, 18, 38, 0.9);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.results-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.results-panel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+}
+
+.vuln-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    transition: border-color 0.2s ease;
+}
+
+.vuln-card:hover {
+    border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+.vulnerability-list {
+    max-height: calc(100% - 120px);
+    overflow-y: auto;
+}
+
+.vulnerability-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.vulnerability-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+}

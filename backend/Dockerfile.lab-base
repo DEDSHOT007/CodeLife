@@ -1,0 +1,39 @@
+# Base Image for CodeLife Labs
+FROM ubuntu:22.04
+
+# Avoid interactive prompts during build
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update and install essential tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    vim \
+    nano \
+    python3 \
+    python3-pip \
+    nmap \
+    iputils-ping \
+    net-tools \
+    build-essential \
+    cmake \
+    libjson-c-dev \
+    libwebsockets-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ttyd (terminal over web) specific version or build from source if needed
+# Trying to download a pre-built binary for simplicity and speed
+RUN wget https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 -O /usr/bin/ttyd \
+    && chmod +x /usr/bin/ttyd
+
+# Create a non-root user for security (optional but recommended)
+RUN useradd -ms /bin/bash codelife
+USER codelife
+WORKDIR /home/codelife
+
+# Expose the default ttyd port
+EXPOSE 7681
+
+# Default command: run ttyd with bash, allowing write access
+CMD ["ttyd", "-W", "bash"]
