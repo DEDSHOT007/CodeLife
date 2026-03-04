@@ -6,6 +6,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.documents import Document
 from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
+from firebase_admin import firestore as fb_firestore
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -46,6 +47,33 @@ class CyService:
         
         self.initialized = True
         logger.info(f"CyService initialized with Vector DB at {self.persist_directory}")
+
+    def _fetch_all_threats(self) -> str:
+        """Fetch ALL threat intelligence from Firestore and format as context string."""
+        try:
+            db = fb_firestore.client()
+            threats_ref = db.collection('threatIntelligence').order_by(
+                'timestamp', direction=fb_firestore.Query.DESCENDING
+            ).limit(100)
+            docs = threats_ref.stream()
+            
+            threat_lines = []
+            for doc in docs:
+                data = doc.to_dict()
+                severity = data.get("severity", "Unknown")
+                source = data.get("source", "Unknown")
+                ttype = data.get("type", "Unknown")
+                desc = data.get("description", "No description")
+                indicators = ", ".join(data.get("indicators", [])[:5])
+                threat_lines.append(f"- [{severity}] ({source}) {ttype}: {desc} | Indicators: {indicators}")
+            
+            if not threat_lines:
+                return "No threat intelligence data available yet. Suggest the user click 'Refresh Live Feeds' on the dashboard."
+            
+            return "\n".join(threat_lines)
+        except Exception as e:
+            logger.warning(f"Failed to fetch threats for Cy context: {e}")
+            return "Unable to load current threat data."
 
     def add_document(self, content: str, metadata: Dict[str, Any]):
         """
@@ -92,6 +120,9 @@ Current User Context:
             system_prompt += f"\n- Current Path: {path}"
             if "pqc-lab" in path:
                 system_prompt += "\n- Context Note: The user is currently in the Post-Quantum Cryptography Lab. Your explanations should cover Shor's Algorithm, NIST standards (like CRYSTALS-Kyber/Dilithium), lattice-based concepts, and key size tradeoffs."
+            if "threats" in path:
+                threat_context = self._fetch_all_threats()
+                system_prompt += f"\n- Context Note: The user is on the Threat Intelligence Dashboard. Below is ALL current threat intelligence data from our OSINT feeds. Use this to answer questions about current threats, severity levels, attack patterns, and indicators of compromise.\n\n--- LIVE THREAT INTELLIGENCE ---\n{threat_context}\n--- END THREAT INTELLIGENCE ---"
         
         user_message = f"""Course Material:
 {context_text}

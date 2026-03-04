@@ -29,11 +29,13 @@ export default function Dashboard() {
   }, []);
 
   async function handleLogout() {
-    try {
-      await logout();
-      navigate('/login');
-    } catch (err) {
-      setError('Failed to log out');
+    if (window.confirm("Are you sure you want to log out?")) {
+      try {
+        await logout();
+        navigate('/login');
+      } catch (err) {
+        setError('Failed to log out');
+      }
     }
   }
 
@@ -266,14 +268,6 @@ export default function Dashboard() {
                   <div>
                     <p className="text-muted small mb-1">Email</p>
                     <p className="mb-0">{profile?.email}</p>
-                  </div>
-                </div>
-                <div className="list-tile mt-3">
-                  <div className="me-3">
-                    <p className="text-muted small mb-1">User ID</p>
-                    <p className="mb-0" style={{ wordBreak: 'break-all' }}>
-                      {profile?.uid}
-                    </p>
                   </div>
                 </div>
 

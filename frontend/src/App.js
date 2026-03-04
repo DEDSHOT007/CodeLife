@@ -15,6 +15,7 @@ import PhishingAnalyzer from './components/PhishingAnalyzer';
 import CyTutor from './components/CyTutor';
 import SandboxTerminal from './components/SandboxTerminal';
 import CodeEditor from './components/CodeEditor';
+import PQCLab from './components/PQCLab';
 
 function PrivateRoute({ children }) {
   const { currentUser, loading: authLoading } = useAuth();

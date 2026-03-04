@@ -374,7 +374,12 @@ assert is_valid == True`}
     return (
         <div className="pqc-lab-container container-fluid py-4 min-vh-100 bg-black text-light">
             <div className="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
-                <h1 className="h3">⚛️ Post-Quantum Cryptography Lab</h1>
+                <div className="d-flex align-items-center gap-3">
+                    <Button variant="outline-light" size="sm" onClick={() => navigate('/dashboard')}>
+                        ← Dashboard
+                    </Button>
+                    <h1 className="h3 mb-0">⚛️ Post-Quantum Cryptography Lab</h1>
+                </div>
                 <Badge bg="secondary" className="fs-6">Step {currentScreen} of 6</Badge>
             </div>
 

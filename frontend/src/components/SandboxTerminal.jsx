@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Button, Spinner, Badge, Alert } from 'react-bootstrap';
 import { api } from '../services/api';
 import './SandboxTerminal.css'; // Create this css file next
@@ -11,6 +11,7 @@ const SandboxTerminal = ({ labId: propLabId }) => {
     const [containerInfo, setContainerInfo] = useState(null);
     const [error, setError] = useState(null);
     const iframeRef = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         checkServiceStatus();
@@ -59,10 +60,15 @@ const SandboxTerminal = ({ labId: propLabId }) => {
     return (
         <Card className="sandbox-terminal-card h-100 shadow-sm">
             <Card.Header className="d-flex justify-content-between align-items-center bg-dark text-light">
-                <span>
-                    <i className="bi bi-terminal-fill me-2"></i>
-                    Cyber Sandbox: Lab {labId}
-                </span>
+                <div className="d-flex align-items-center gap-3">
+                    <Button variant="outline-light" size="sm" onClick={() => navigate('/dashboard')}>
+                        ← Dashboard
+                    </Button>
+                    <span>
+                        <i className="bi bi-terminal-fill me-2"></i>
+                        Cyber Sandbox: Lab {labId}
+                    </span>
+                </div>
                 <div>
                     {status === 'running' && (
                         <Badge bg="success" className="me-2">Running</Badge>

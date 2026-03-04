@@ -37,13 +37,14 @@ class PQCSandboxRunner:
             # Run the container with strict limits
             container = self.client.containers.run(
                 image="codelife-pqc-base:latest",
-                command=["python3", "/tmp/script.py"],
-                volumes={temp_file_path: {'bind': '/tmp/script.py', 'mode': 'ro'}},
+                command=["python3", "/home/pqcuser/script.py"],
+                volumes={temp_file_path: {'bind': '/home/pqcuser/script.py', 'mode': 'ro'}},
                 detach=True,
                 mem_limit="256m",
                 nano_cpus=500000000, # 0.5 CPU
                 network_mode="none",
                 read_only=True,
+                tmpfs={'/tmp': 'size=16m,mode=1777'},
                 pids_limit=50
             )
 
