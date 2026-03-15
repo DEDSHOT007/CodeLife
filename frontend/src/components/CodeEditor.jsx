@@ -6,9 +6,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import './CodeEditor.css';
 
-const CodeEditor = ({ initialCode = "# Write your Python code here...\nimport os\nimport subprocess\n\n# Example: Try writing code with potential security issues\nuser_input = input('Enter command: ')\nos.system(user_input)  # This is a security vulnerability!\n", initialLanguage = "python" }) => {
-    const [code, setCode] = useState(initialCode);
+const CODE_PLACEHOLDERS = {
+    python: "# Write your Python code here...\nimport os\nimport subprocess\n\n# Example: Try writing code with potential security issues\nuser_input = input('Enter command: ')\nos.system(user_input)  # This is a security vulnerability!\n",
+    javascript: "// Write your JavaScript code here...\nconst exec = require('child_process').exec;\n\n// Example: Try writing code with potential security issues\nconst userInput = 'ls'; // Imagine this comes from user input\nexec(userInput); // This is a security vulnerability!\n",
+    html: "<!-- Write your HTML code here... -->\n<!DOCTYPE html>\n<html>\n<head>\n  <title>Security Test</title>\n</head>\n<body>\n  <!-- Example: Try writing HTML with potential XSS issues -->\n  <div id=\"output\"></div>\n  <script>\n    const userInput = '<img src=x onerror=alert(1)>';\n    document.getElementById('output').innerHTML = userInput; // XSS vulnerability!\n  </script>\n</body>\n</html>\n"
+};
+
+const CodeEditor = ({ initialLanguage = "python" }) => {
     const [language, setLanguage] = useState(initialLanguage);
+    const [code, setCode] = useState(CODE_PLACEHOLDERS[initialLanguage]);
     const [analyzing, setAnalyzing] = useState(false);
     const [results, setResults] = useState(null);
     const [error, setError] = useState(null);
@@ -20,7 +26,11 @@ const CodeEditor = ({ initialCode = "# Write your Python code here...\nimport os
     };
 
     const handleLanguageChange = (e) => {
-        setLanguage(e.target.value);
+        const newLang = e.target.value;
+        setLanguage(newLang);
+        if (Object.values(CODE_PLACEHOLDERS).includes(code) || !code.trim()) {
+            setCode(CODE_PLACEHOLDERS[newLang]);
+        }
         setResults(null);
         setError(null);
     };
