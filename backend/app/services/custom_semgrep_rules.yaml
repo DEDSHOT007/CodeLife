@@ -1,0 +1,93 @@
+rules:
+  - id: custom-unsafe-code-execution
+    message: "Potential code injection vulnerability: Avoid using dangerous functions like eval(), setTimeout() with strings, or the Function constructor."
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      cwe: CWE-94
+      owasp: A03:2021-Injection
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: setTimeout(..., <... $Y ...>)
+      - pattern: setInterval(..., <... $Y ...>)
+      - pattern: new Function(...)
+
+  - id: custom-command-injection
+    message: "Potential command injection vulnerability: Avoid using child_process functions with untrusted input."
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      cwe: CWE-78
+      owasp: A03:2021-Injection
+    pattern-either:
+      - pattern: exec(...)
+      - pattern: $X.exec(...)
+      - pattern: require('child_process').exec(...)
+      - pattern: require('child_process').spawn(...)
+      - pattern: require('child_process').execSync(...)
+      - pattern: child_process.exec(...)
+      - pattern: child_process.spawn(...)
+
+  - id: custom-unsafe-dom-manipulation
+    message: "Potential Cross-Site Scripting (XSS) vulnerability: Writing raw HTML or unsanitized input to the DOM can lead to script injection."
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      cwe: CWE-79
+      owasp: A03:2021-Injection
+    pattern-either:
+      - pattern: document.write(...)
+      - pattern: document.writeln(...)
+      - pattern: $X.innerHTML = ...
+      - pattern: $X.outerHTML = ...
+      - pattern: $X.insertAdjacentHTML(...)
+
+  - id: custom-inline-html-xss
+    message: "Potential XSS vulnerability in inline script: Avoid direct interpolation of user data into HTML."
+    languages: [html]
+    severity: ERROR
+    metadata:
+      cwe: CWE-79
+      owasp: A03:2021-Injection
+    pattern-either:
+      - pattern: <script>...eval(...)...</script>
+      - pattern: <script>...document.write(...)...</script>
+      - pattern: <script>...$X.innerHTML = ...</script>
+
+  - id: custom-weak-cryptography
+    message: "Use of weak hashing algorithm (MD5/SHA1). Use SHA-256 or a stronger hashing algorithm."
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      cwe: CWE-328
+      owasp: A02:2021-Cryptographic Failures
+    pattern-either:
+      - pattern: crypto.createHash('md5')
+      - pattern: crypto.createHash('sha1')
+
+  - id: custom-insecure-random-number
+    message: "Use of insecure random number generator (Math.random). Instead, use crypto.getRandomValues()."
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      cwe: CWE-330
+    pattern: Math.random()
+
+  - id: custom-hardcoded-secret
+    message: "Potential hardcoded secret or API key found. Do not commit credentials to source code."
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      cwe: CWE-798
+    patterns:
+      - pattern-either:
+          - pattern: $KEY = "$SECRET"
+          - pattern: const $KEY = "$SECRET"
+          - pattern: let $KEY = "$SECRET"
+          - pattern: var $KEY = "$SECRET"
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: (?i)(password|secret|api_key|token)
+      - metavariable-regex:
+          metavariable: $SECRET
+          regex: ^(?!\s*$).+
