@@ -46,3 +46,8 @@ backend/app/models/distilbert-phishing/scheduler.pt
 backend/app/models/distilbert-phishing/rng_state.pth
 .gitignore
 backend/app/models/distilbert-phishing/model.safetensors
+
+# Vector DB
+backend/app/data/cy_vector_db/
+backend/app/data/cy_vector_db/chroma.sqlite3
+backend/app/data/cy_vector_db/84d5382a-64c5-4c7d-82cf-4ab8c2625f68/data_level0.bin
