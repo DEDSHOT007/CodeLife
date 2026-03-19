@@ -1,0 +1,198 @@
+.sandbox-launcher-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+/* ──── Header & Main Cards ──── */
+.sandbox-launcher-container > .card,
+.sandbox-launcher-container > .card > .card-header,
+.sandbox-launcher-container .card .card-body {
+    color: var(--text-primary);
+}
+
+.sandbox-launcher-container > .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(var(--blur-amount));
+}
+
+.sandbox-launcher-container > .card > .card-header {
+    background: rgba(5, 9, 21, 0.9) !important;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+/* ──── Idle Challenges Card ──── */
+.sandbox-launcher-container .challenge-item {
+    transition: all 0.2s ease;
+    padding: 0.75rem 0;
+    border-color: var(--accent-primary) !important;
+}
+
+.sandbox-launcher-container .challenge-item:hover {
+    background-color: rgba(124, 93, 255, 0.06);
+    border-radius: 0.25rem;
+    margin-left: -0.5rem;
+    padding-left: 1.25rem !important;
+}
+
+/* ──── Status Dot ──── */
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ──── Iframe Container ──── */
+.sandbox-iframe-container {
+    background: #0a0e1a;
+    border: 1px solid var(--border-color);
+}
+
+.sandbox-iframe-container iframe {
+    background: white;
+}
+
+/* ──── Control Bar (Running) ──── */
+.sandbox-launcher-container .bg-success {
+    background: linear-gradient(135deg, rgba(94, 243, 140, 0.15), rgba(74, 209, 217, 0.1)) !important;
+    border-bottom: 1px solid rgba(94, 243, 140, 0.2);
+}
+
+/* ──── Challenges Side-Panel ──── */
+.challenges-panel {
+    background: linear-gradient(180deg, #0d1220, #0a0f1c);
+    border-left: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.challenges-panel h5,
+.challenges-panel h6 {
+    color: var(--text-primary);
+}
+
+.challenges-panel .card {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: transparent;
+    border-radius: var(--radius-sm);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.challenges-panel .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(3, 5, 20, 0.5);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.challenges-panel .card .card-body {
+    color: var(--text-secondary);
+}
+
+/* ──── Hint Reveal Toggle ──── */
+.hint-toggle {
+    cursor: pointer;
+    user-select: none;
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+}
+
+.hint-toggle:hover {
+    color: var(--accent-secondary);
+}
+
+.hint-text {
+    animation: fadeSlideIn 0.2s ease;
+}
+
+@keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ──── Challenge Type Icons ──── */
+.challenge-type-flag      { color: var(--accent-tertiary); }
+.challenge-type-challenge  { color: var(--accent-primary); }
+.challenge-type-tip       { color: var(--accent-success); }
+
+/* ──── Custom Scrollbar ──── */
+.challenges-scroll::-webkit-scrollbar {
+    width: 5px;
+}
+
+.challenges-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.challenges-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.challenges-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ──── Alert Overrides ──── */
+.sandbox-launcher-container .alert-info {
+    background: rgba(74, 209, 217, 0.08);
+    border-color: rgba(74, 209, 217, 0.25);
+    color: var(--text-primary);
+}
+
+.sandbox-launcher-container .alert-danger {
+    background: rgba(255, 107, 129, 0.1);
+    border-color: rgba(255, 107, 129, 0.35);
+    color: var(--text-primary);
+}
+
+.sandbox-launcher-container .alert-secondary {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--border-color);
+    color: var(--text-muted);
+}
+
+/* ──── Idle Launch Section ──── */
+.sandbox-launcher-container .text-center.p-5 h4 {
+    color: var(--text-primary);
+}
+
+.sandbox-launcher-container .text-center.p-5 .bi-rocket-takeoff {
+    color: var(--accent-primary) !important;
+}
+
+/* ──── Category Badges (idle header) ──── */
+.sandbox-launcher-container .badge.bg-secondary {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+}
+
+/* ──── Responsive ──── */
+@media (max-width: 768px) {
+    .sandbox-launcher-container {
+        padding: 1rem 0.5rem;
+    }
+    
+    .sandbox-iframe-container {
+        height: 400px !important;
+    }
+}
+
+/* ──── Time Warning Blink ──── */
+.time-warning {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75%      { opacity: 0.5; }
+}

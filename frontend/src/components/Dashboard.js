@@ -130,7 +130,7 @@ export default function Dashboard() {
       icon: '🖥️',
       label: 'Cyber Sandbox',
       desc: 'Isolated lab environments for practice',
-      route: '/sandbox/default',
+      route: '/sandbox',
     },
     {
       id: 'pqc-lab',

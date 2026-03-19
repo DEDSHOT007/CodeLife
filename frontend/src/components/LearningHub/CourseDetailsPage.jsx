@@ -9,15 +9,32 @@ export default function CourseDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeLesson, setActiveLesson] = useState(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrollLoading, setEnrollLoading] = useState(false);
   const { currentUser } = useAuth();
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadCourseDetails() {
+    async function checkEnrollmentAndLoadCourse() {
       try {
         setLoading(true);
         const token = await currentUser.getIdToken();
+
+        // 1. Check if user is enrolled
+        const enrollmentsRes = await fetch('http://localhost:8000/user/courses', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (enrollmentsRes.ok) {
+          const enrollmentsData = await enrollmentsRes.json();
+          const enrolled = enrollmentsData.enrolled_courses.some(c => c.id === courseId);
+          if (isMounted) setIsEnrolled(enrolled);
+        }
+
+        // 2. Load course details
         const response = await fetch(`http://localhost:8000/courses/${courseId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -45,7 +62,7 @@ export default function CourseDetailsPage() {
     }
 
     if (currentUser && courseId) {
-      loadCourseDetails();
+      checkEnrollmentAndLoadCourse();
     }
 
     return () => {
@@ -66,9 +83,9 @@ export default function CourseDetailsPage() {
           }
         }
       );
-      
+
       if (!response.ok) throw new Error('Failed to mark lesson complete');
-      
+
       // Update UI
       setCourse(prev => ({
         ...prev,
@@ -78,6 +95,28 @@ export default function CourseDetailsPage() {
       }));
     } catch (err) {
       setError('Failed to complete lesson: ' + err.message);
+    }
+  }
+
+  async function handleEnroll() {
+    try {
+      setEnrollLoading(true);
+      const token = await currentUser.getIdToken();
+      const response = await fetch(`http://localhost:8000/courses/${courseId}/enroll`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to enroll in course');
+
+      setIsEnrolled(true);
+    } catch (err) {
+      setError('Failed to enroll: ' + err.message);
+    } finally {
+      setEnrollLoading(false);
     }
   }
 
@@ -100,7 +139,7 @@ export default function CourseDetailsPage() {
   }
 
   const completedLessons = course.lessons.filter(l => l.completed).length;
-  const completionPercentage = (completedLessons / course.lessons.length) * 100;
+  const completionPercentage = course.lessons.length > 0 ? (completedLessons / course.lessons.length) * 100 : 0;
 
   return (
     <div className="page-shell">
@@ -125,7 +164,7 @@ export default function CourseDetailsPage() {
 
                 <div className="lessons-list" style={{ maxHeight: '520px', overflowY: 'auto' }}>
                   {course.lessons.map((lesson, index) => (
-                    <Card 
+                    <Card
                       key={lesson.id}
                       className="mb-2 border-0"
                       style={{
@@ -157,7 +196,29 @@ export default function CourseDetailsPage() {
           <Col lg={9} md={8}>
             {error && <Alert variant="danger" className="mb-4">{error}</Alert>}
 
-            {activeLesson && (
+            {!isEnrolled ? (
+              <Card className="card-glass border-0 shadow-lg animate-fadeIn text-center p-5">
+                <Card.Body>
+                  <i className="bi bi-journal-code text-primary mb-3" style={{ fontSize: '4rem' }}></i>
+                  <h3 className="mb-4">Enroll to Access Course Content</h3>
+                  <p className="text-muted mb-4">
+                    Join this course to unlock all lessons, videos, and quizzes. Track your progress build your cybersecurity skills.
+                  </p>
+                  <Button
+                    className="btn-modern-primary px-5 py-2"
+                    size="lg"
+                    onClick={handleEnroll}
+                    disabled={enrollLoading}
+                  >
+                    {enrollLoading ? (
+                      <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" /> Enrolling...</>
+                    ) : (
+                      'Enroll Now'
+                    )}
+                  </Button>
+                </Card.Body>
+              </Card>
+            ) : activeLesson ? (
               <Card className="card-glass border-0 shadow-lg animate-fadeIn">
                 <Card.Body className="p-5">
                   {/* Lesson Header */}
@@ -223,9 +284,9 @@ export default function CourseDetailsPage() {
                             <div>
                               {quiz.options.map((option, optIndex) => (
                                 <div key={optIndex} className="form-check mb-2">
-                                  <input 
-                                    className="form-check-input" 
-                                    type="radio" 
+                                  <input
+                                    className="form-check-input"
+                                    type="radio"
                                     name={`quiz_${index}`}
                                     id={`quiz_${index}_${optIndex}`}
                                   />
@@ -252,7 +313,7 @@ export default function CourseDetailsPage() {
                   </Button>
                 </Card.Body>
               </Card>
-            )}
+            ) : null}
           </Col>
         </Row>
       </Container>

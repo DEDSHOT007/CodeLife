@@ -1,0 +1,128 @@
+{
+    "scenarios": [
+        {
+            "id": "juice-shop",
+            "name": "OWASP Juice Shop",
+            "description": "Modern intentionally insecure web application with 100+ challenges covering injection, XSS, broken authentication and more.",
+            "difficulty": "beginner-advanced",
+            "docker_image": "bkimminich/juice-shop:latest",
+            "port": 3000,
+            "categories": [
+                "web",
+                "injection",
+                "xss",
+                "authentication",
+                "authorization"
+            ],
+            "estimated_time": "2-4 hours",
+            "challenges": [
+                {
+                    "id": "score-board",
+                    "name": "Find the Score Board",
+                    "type": "flag",
+                    "difficulty": "beginner",
+                    "hint": "Try exploring the application's client-side JavaScript or route definitions."
+                },
+                {
+                    "id": "sql-injection",
+                    "name": "SQL Injection Login",
+                    "type": "flag",
+                    "difficulty": "beginner",
+                    "hint": "What happens if you enter a SQL fragment like ' OR 1=1-- in the email field?"
+                },
+                {
+                    "id": "dom-xss",
+                    "name": "Perform a DOM XSS Attack",
+                    "type": "challenge",
+                    "difficulty": "intermediate",
+                    "hint": "Look for a search field that reflects user input without sanitisation."
+                },
+                {
+                    "id": "admin-section",
+                    "name": "Access the Admin Section",
+                    "type": "flag",
+                    "difficulty": "intermediate",
+                    "hint": "Once you bypass login, explore the navigation for hidden admin routes."
+                },
+                {
+                    "id": "forged-feedback",
+                    "name": "Post Feedback as Another User",
+                    "type": "challenge",
+                    "difficulty": "intermediate",
+                    "hint": "Intercept the feedback POST request and modify the userId field."
+                },
+                {
+                    "id": "exposed-metrics",
+                    "name": "Find the Exposed Metrics Endpoint",
+                    "type": "tip",
+                    "difficulty": "beginner",
+                    "hint": "Many Node.js apps expose a /metrics endpoint for Prometheus. Try common paths."
+                }
+            ]
+        },
+        {
+            "id": "dvwa",
+            "name": "Damn Vulnerable Web App",
+            "description": "Classic vulnerable PHP application for learning web security fundamentals including SQL injection, XSS, CSRF, and command injection.",
+            "difficulty": "beginner-intermediate",
+            "docker_image": "vulnerables/web-dvwa:latest",
+            "port": 80,
+            "categories": [
+                "sql-injection",
+                "xss",
+                "csrf",
+                "file-inclusion",
+                "command-injection"
+            ],
+            "estimated_time": "3-5 hours",
+            "default_credentials": {
+                "username": "admin",
+                "password": "password"
+            },
+            "challenges": [
+                {
+                    "id": "brute-force",
+                    "name": "Brute Force Login",
+                    "type": "challenge",
+                    "difficulty": "beginner",
+                    "hint": "Use a tool like Hydra or Burp Intruder with a common password list."
+                },
+                {
+                    "id": "sql-injection-basic",
+                    "name": "SQL Injection (Low)",
+                    "type": "flag",
+                    "difficulty": "beginner",
+                    "hint": "Enter 1' OR '1'='1 into the User ID field and observe the result."
+                },
+                {
+                    "id": "reflected-xss",
+                    "name": "Reflected XSS (Low)",
+                    "type": "challenge",
+                    "difficulty": "beginner",
+                    "hint": "The 'What's your name?' input echoes directly into the page. Try injecting a <script> tag."
+                },
+                {
+                    "id": "command-injection",
+                    "name": "Command Injection (Low)",
+                    "type": "flag",
+                    "difficulty": "beginner",
+                    "hint": "The ping utility doesn't sanitize input. Try appending ; ls or && cat /etc/passwd."
+                },
+                {
+                    "id": "file-inclusion",
+                    "name": "Local File Inclusion",
+                    "type": "challenge",
+                    "difficulty": "intermediate",
+                    "hint": "Notice the page parameter in the URL. Can you traverse directories with ../../?"
+                },
+                {
+                    "id": "csrf-attack",
+                    "name": "CSRF Password Change",
+                    "type": "tip",
+                    "difficulty": "intermediate",
+                    "hint": "Craft an HTML page that auto-submits the password change form to DVWA."
+                }
+            ]
+        }
+    ]
+}

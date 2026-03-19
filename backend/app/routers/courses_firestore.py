@@ -78,6 +78,32 @@ async def get_course_detail(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/{course_id}/enroll")
+async def enroll_course(
+    course_id: str,
+    user=Depends(verify_firebase_token)
+):
+    """Enroll a user in a course"""
+    try:
+        user_id = user["uid"]
+        
+        # Verify course exists
+        course = CourseService.get_course_by_id(course_id)
+        if not course:
+            raise HTTPException(status_code=404, detail="Course not found")
+        
+        UserProgressService.enroll_course(user_id, course_id)
+        
+        return {
+            "message": "Successfully enrolled in course",
+            "course_id": course_id
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/{course_id}/lessons/{lesson_id}/complete")
 async def mark_lesson_complete(

@@ -382,6 +382,42 @@ class UserProgressService:
             return doc.to_dict().get("completed", False)
         return False
 
+    @staticmethod
+    def enroll_course(user_id: str, course_id: str) -> bool:
+        db = get_firestore_client()
+        user_enroll_ref = db.collection("user_enrollments").document(user_id)
+        doc = user_enroll_ref.get()
+        
+        if doc.exists:
+            courses = doc.to_dict().get("courses", [])
+            if course_id not in courses:
+                courses.append(course_id)
+                user_enroll_ref.update({"courses": courses, "updated_at": datetime.now()})
+        else:
+            user_enroll_ref.set({"user_id": user_id, "courses": [course_id], "created_at": datetime.now()})
+        return True
+
+    @staticmethod
+    def get_enrolled_courses(user_id: str) -> List[Dict]:
+        db = get_firestore_client()
+        user_enroll_ref = db.collection("user_enrollments").document(user_id)
+        doc = user_enroll_ref.get()
+        
+        if not doc.exists:
+            return []
+            
+        course_ids = doc.to_dict().get("courses", [])
+        if not course_ids:
+            return []
+            
+        enrolled_courses = []
+        for course_id in course_ids:
+            course = CourseService.get_course_by_id(course_id)
+            if course:
+                enrolled_courses.append(course)
+                
+        return enrolled_courses
+
 class QuizService:
     """Service for managing quizzes"""
 

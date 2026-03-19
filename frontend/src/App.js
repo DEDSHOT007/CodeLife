@@ -13,7 +13,8 @@ import ThreatDashboard from './components/ThreatDashboard';
 import CommandPost from './components/CommandPost';
 import PhishingAnalyzer from './components/PhishingAnalyzer';
 import CyTutor from './components/CyTutor';
-import SandboxTerminal from './components/SandboxTerminal';
+import SandboxLauncher from './components/SandboxLauncher';
+import SandboxMenu from './components/SandboxMenu';
 import CodeEditor from './components/CodeEditor';
 import PQCLab from './components/PQCLab';
 
@@ -116,12 +117,10 @@ function App() {
             }
           />
           <Route
-            path="/sandbox/:labId"
+            path="/sandbox/scenario/:scenarioId"
             element={
               <PrivateRoute>
-                <div className="p-4" style={{ height: '90vh' }}>
-                  <SandboxTerminal />
-                </div>
+                <SandboxLauncher />
               </PrivateRoute>
             }
           />
@@ -138,6 +137,14 @@ function App() {
             element={
               <PrivateRoute>
                 <PQCLab />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/sandbox"
+            element={
+              <PrivateRoute>
+                <SandboxMenu />
               </PrivateRoute>
             }
           />

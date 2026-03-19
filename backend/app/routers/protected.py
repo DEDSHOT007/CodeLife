@@ -44,17 +44,8 @@ async def get_progress(user=Depends(verify_firebase_token)):
 @router.get("/courses")
 async def get_enrolled_courses(user=Depends(verify_firebase_token)):
     uid = user["uid"]
-    # Fetch user's enrolled courses from Firestore 'user_enrollments' collection or suitable path
-    # Example assumed path: user_enrollments/{uid} where courses is a list field
-
-    user_enroll_doc = db.collection("user_enrollments").document(uid).get()
-    
-    if not user_enroll_doc.exists:
-        return {"enrolled_courses": []}  # no enrollments yet
-    
-    data = user_enroll_doc.to_dict()
-    enrolled_courses = data.get("courses", [])
-
-    # Optionally fetch course details from 'courses' collection if you want full info
-
-    return {"enrolled_courses": enrolled_courses}
+    try:
+        enrolled_courses = UserProgressService.get_enrolled_courses(uid)
+        return {"enrolled_courses": enrolled_courses}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

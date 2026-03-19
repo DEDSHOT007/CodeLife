@@ -96,7 +96,7 @@ const PQCLab = () => {
                 If an attacker records encrypted data today, they can decrypt it tomorrow when a powerful enough quantum computer is built (Store Now, Decrypt Later).
             </p>
             <Button variant="primary" size="lg" className="mt-4" onClick={handleNext}>
-                See The Solution
+                Start
             </Button>
         </div>
     );

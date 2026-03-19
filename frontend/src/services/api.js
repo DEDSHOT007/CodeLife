@@ -142,5 +142,8 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ user_id: user?.uid, score_delta: 0 }),
     });
-  }
+  },
+
+  // Helper for sandboxApi which uses its own routing structure
+  sandboxRequest: (endpoint, options) => authenticatedRequest(endpoint, options)
 };

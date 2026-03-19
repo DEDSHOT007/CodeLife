@@ -1,4 +1,4 @@
-﻿# Node
+# Node
 node_modules/
 dist/
 
@@ -45,3 +45,4 @@ backend/app/models/distilbert-phishing/trainer_state.json
 backend/app/models/distilbert-phishing/scheduler.pt
 backend/app/models/distilbert-phishing/rng_state.pth
 .gitignore
+backend/app/models/distilbert-phishing/model.safetensors

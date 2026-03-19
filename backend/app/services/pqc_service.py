@@ -64,7 +64,7 @@ import json
 import time
 
 try:
-    sig_alg = "Dilithium2"
+    sig_alg = "ML-DSA-44"  # new NIST standard name for Dilithium2
     message = b"This is a highly secure message."
     
     with oqs.Signature(sig_alg) as signer:
@@ -85,7 +85,7 @@ try:
             verify_time = (time.perf_counter() - start) * 1000
 
             output = {
-                "algorithm": sig_alg,
+                "algorithm": "Dilithium2", # keep frontend interface consistent
                 "keygen_time_ms": round(keygen_time, 2),
                 "sign_time_ms": round(sign_time, 2),
                 "verify_time_ms": round(verify_time, 2),
@@ -108,7 +108,7 @@ except Exception as e:
         algo_map = {
             "Kyber512": ("kem", "Kyber512"),
             "Kyber768": ("kem", "Kyber768"),
-            "Dilithium2": ("sig", "Dilithium2"),
+            "Dilithium2": ("sig", "ML-DSA-44"),  # ML-DSA-44 is Dilithium2
             # For classical simulation, we might need a dummy script or rely on Python 'cryptography' inside the container
             "RSA-2048": ("sig", "RSA-2048"), # Requires different handling in script
             "ECC": ("sig", "ECDSA")         # Requires different handling in script
